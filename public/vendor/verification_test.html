@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style" dir="ltr" data-theme="theme-default" data-assets-path="./assets/" data-template="vertical-menu-template">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>Verification Test</title>
+    <script>
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Test Failed: ' + message);
+            document.body.innerHTML += '<div style="color:red; margin: 10px; border: 1px solid red; padding: 10px;">Test Failed: ' + message + ' at ' + source + ':' + lineno + '</div>';
+        };
+        window.logSuccess = function(msg) {
+            console.log(msg);
+            document.body.innerHTML += '<div style="color:green; margin: 10px; border: 1px solid green; padding: 10px;">' + msg + '</div>';
+        }
+    </script>
+    
+    <!-- Helpers -->
+    <script src="assets/vendor/js/helpers.js"></script>
+    
+    <!-- Config -->
+    <script src="assets/js/config.js"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Migration Verification Test</h1>
+    <p>This page verifies that the core scripts load correctly and the path migration issues are resolved.</p>
+    
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+            <!-- Dummy Menu -->
+        </aside>
+        <div class="layout-page">
+            <div class="content-wrapper">
+                <div class="container-xxl flex-grow-1 container-p-y">
+                    <h4 class="py-3 mb-4">Test Content</h4>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="assets/vendor/libs/popper/popper.js"></script>
+    <script src="assets/vendor/js/bootstrap.js"></script>
+    <script src="assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="assets/vendor/libs/hammer/hammer.js"></script>
+    <script src="assets/vendor/js/menu.js"></script>
+
+    <!-- Main JS -->
+    <script src="assets/js/main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verify Helpers
+            if (window.Helpers) {
+                window.logSuccess('Helpers.js loaded and window.Helpers is defined.');
+                try {
+                   const theme = window.Helpers.getPreferredTheme();
+                   window.logSuccess('Helpers.getPreferredTheme() returned: ' + theme);
+                } catch (e) {
+                   console.error(e);
+                   document.body.innerHTML += '<div style="color:red">Helpers.getPreferredTheme() failed: ' + e.message + '</div>';
+                }
+            } else {
+                document.body.innerHTML += '<div style="color:red">Helpers is not defined!</div>';
+            }
+
+            // Verify Config
+            if (window.config) {
+                window.logSuccess('Config.js loaded and window.config is defined.');
+                if (window.assetsPath) {
+                    window.logSuccess('window.assetsPath is set to: ' + window.assetsPath);
+                } else {
+                    document.body.innerHTML += '<div style="color:orange">window.assetsPath is missing (expected if data-assets-path is wrong, but script handled it without crash)</div>';
+                }
+            }
+
+            // Verify Menu
+            if (typeof Menu !== 'undefined') {
+                 window.logSuccess('Menu.js loaded and Menu class is defined.');
+            } else {
+                 document.body.innerHTML += '<div style="color:red">Menu is not defined!</div>';
+            }
+            
+            // Verify TemplateCustomizer (might be missing, which is fine if robustness works)
+            if (window.templateCustomizer) {
+                window.logSuccess('TemplateCustomizer loaded.');
+            } else {
+                window.logSuccess('TemplateCustomizer not loaded (Optional). Script should not crash.');
+            }
+
+            window.logSuccess('Test completed. If no red boxes appear, the fix is verified.');
+        });
+    </script>
+</body>
+</html>

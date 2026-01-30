@@ -1,0 +1,232 @@
+/**
+ * Tag Autocomplete Styles
+ * Email-style tag input with chips and dropdown suggestions
+ */
+
+/* Container */
+.tag-input-container {
+    position: relative;
+}
+
+/* Tag List (Selected Items) */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    min-height: 32px;
+}
+
+/* Tag Chip */
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(145deg, #696cff, #7367f0);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(105, 108, 255, 0.3);
+    animation: chipSlideIn 0.2s ease-out;
+}
+
+@keyframes chipSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.tag-chip .tag-chip-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tag-chip .tag-remove {
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    margin-left: 4px;
+}
+
+.tag-chip .tag-remove:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Autocomplete Dropdown */
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    background: var(--bs-body-bg, #fff);
+    border: 1px solid var(--bs-border-color, #d9dee3);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1050;
+    margin-top: 4px;
+}
+
+.autocomplete-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.05));
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: var(--bs-tertiary-bg, #f5f5f9);
+}
+
+.autocomplete-item-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #696cff, #7367f0);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.autocomplete-item-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.autocomplete-item-name {
+    font-weight: 500;
+    color: var(--bs-heading-color, #566a7f);
+}
+
+.autocomplete-item-email,
+.autocomplete-item-serial {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color, #a1acb8);
+}
+
+.autocomplete-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--bs-secondary-color, #a1acb8);
+}
+
+.autocomplete-empty i {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Map Container Styles */
+#assignment-map {
+    border: 1px solid var(--bs-border-color, #d9dee3);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Coordinates Display */
+.coordinates-display {
+    background: var(--bs-tertiary-bg, #f5f5f9);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.coordinates-display .form-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--bs-secondary-color, #a1acb8);
+    margin-bottom: 4px;
+}
+
+/* Modal Adjustments */
+#assignmentModal .modal-dialog {
+    max-width: 900px;
+}
+
+#assignmentModal .modal-body {
+    padding: 1.5rem;
+}
+
+/* Map Search Bar */
+.map-search-bar {
+    margin-bottom: 12px;
+}
+
+.map-search-bar .input-group-text {
+    background: var(--bs-tertiary-bg, #f5f5f9);
+    border-right: none;
+}
+
+.map-search-bar .form-control {
+    border-left: none;
+}
+
+.map-search-bar .btn {
+    min-width: 100px;
+}
+
+/* Leaflet Popup Customization */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+}
+
+.leaflet-popup-content {
+    margin: 12px 16px;
+    font-size: 0.875rem;
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .autocomplete-dropdown,
+.dark-style .autocomplete-dropdown {
+    background: #2b2c40;
+    border-color: #444564;
+}
+
+[data-theme="dark"] .autocomplete-item:hover,
+.dark-style .autocomplete-item:hover {
+    background: #363751;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #assignmentModal .modal-dialog {
+        max-width: 100%;
+        margin: 0.5rem;
+    }
+
+    #assignment-map {
+        height: 300px !important;
+    }
+
+    .tag-chip {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+}

@@ -1,0 +1,151 @@
+/* Assignment List Page Styles */
+
+/* Hoverable rows with cursor pointer */
+tr[data-bs-toggle="collapse"] {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+tr[data-bs-toggle="collapse"]:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Collapsed row details background */
+.bg-lighter {
+    background-color: #f9f9f9;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Avatar Group Styling */
+.avatar-group {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+}
+
+.avatar-group .avatar {
+    position: relative;
+    margin-right: -0.75rem;
+    transition: all 0.2s ease;
+    border: 2px solid #fff;
+}
+
+.avatar-group .avatar:hover {
+    z-index: 10;
+    transform: translateY(-4px);
+}
+
+/* Avatar Initials Styling */
+.avatar-initial {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Generate consistent colors based on initials */
+.avatar-initial.bg-avatar-1 {
+    background-color: #696cff;
+}
+
+.avatar-initial.bg-avatar-2 {
+    background-color: #8592a3;
+}
+
+.avatar-initial.bg-avatar-3 {
+    background-color: #71dd37;
+}
+
+.avatar-initial.bg-avatar-4 {
+    background-color: #ffab00;
+}
+
+.avatar-initial.bg-avatar-5 {
+    background-color: #ff3e1d;
+}
+
+.avatar-initial.bg-avatar-6 {
+    background-color: #03c3ec;
+}
+
+.avatar-initial.bg-avatar-7 {
+    background-color: #233446;
+}
+
+.avatar-initial.bg-avatar-8 {
+    background-color: #7367f0;
+}
+
+/* Status Badge Custom Colors */
+.badge.bg-label-pending {
+    background-color: #e7e7ff !important;
+    color: #696cff !important;
+}
+
+.badge.bg-label-in_progress {
+    background-color: #fff2e1 !important;
+    color: #ffab00 !important;
+}
+
+.badge.bg-label-completed {
+    background-color: #e8fadf !important;
+    color: #71dd37 !important;
+}
+
+.badge.bg-label-cancelled {
+    background-color: #f1f1f2 !important;
+    color: #8592a3 !important;
+}
+
+/* Location Button Styling */
+.btn-location {
+    font-size: 1.2rem;
+}
+
+.btn-location:hover {
+    transform: scale(1.1);
+}
+
+/* Collapsed Details Section */
+.assignment-details {
+    padding: 1.5rem;
+    border-top: 1px solid #d9dee3;
+}
+
+.assignment-details h6 {
+    color: #566a7f;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.assignment-details .alert {
+    font-size: 0.875rem;
+}
+
+/* Filter button group */
+.btn-group .btn.active {
+    background-color: #696cff;
+    color: #fff;
+    border-color: #696cff;
+}
+
+/* Skeleton Row */
+.skeleton-row {
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .avatar-group .avatar {
+        margin-right: -0.5rem;
+    }
+
+    .assignment-details {
+        padding: 1rem;
+    }
+}

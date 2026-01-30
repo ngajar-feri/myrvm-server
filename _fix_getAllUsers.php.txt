@@ -1,0 +1,21 @@
+    /**
+     * Get all users for admin dashboard.
+     */
+    public function getAllUsers(Request $request)
+    {
+        try {
+            $users = \App\Models\User::select('id', 'name', 'email', 'role', 'points_balance', 'created_at')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $users
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }

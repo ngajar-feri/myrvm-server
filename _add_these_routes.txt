@@ -1,0 +1,3 @@
+// Add before existing protected routes
+Route::get('/v1/admin/users', [UserController::class, 'getAllUsers']);
+Route::get('/v1/admin/users/{id}/stats', [UserController::class, 'getUserStats']);

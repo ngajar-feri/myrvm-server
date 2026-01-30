@@ -1,0 +1,93 @@
+services:
+    app:
+        # Using existing local image instead of building (network issues)
+        image: myrvm-ecosystem-v2-app:latest
+        container_name: myrvm-app
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        networks:
+            - myrvm-network
+        depends_on:
+            - db
+            - redis
+        secrets:
+            - db_password
+            - db_username
+        environment:
+            DB_PASSWORD_FILE: /run/secrets/db_password
+            DB_USERNAME_FILE: /run/secrets/db_username
+
+    web:
+        image: nginx:alpine
+        container_name: myrvm-web
+        restart: unless-stopped
+        ports:
+            - "8001:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        networks:
+            - myrvm-network
+        depends_on:
+            - app
+
+    db:
+        image: postgres:15-alpine
+        container_name: myrvm-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER_FILE: /run/secrets/db_username
+            POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+        ports:
+            - "${DB_PORT}:5432"
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - myrvm-network
+        secrets:
+            - db_password
+            - db_username
+
+    redis:
+        image: redis:7-alpine
+        container_name: myrvm-redis
+        restart: unless-stopped
+        ports:
+            - "${REDIS_PORT}:6379"
+        volumes:
+            - redis-data:/data
+        networks:
+            - myrvm-network
+
+    # minio:
+    #     image: minio/minio
+    #     container_name: myrvm-minio
+    #     ports:
+    #         - "${AWS_PORT}:9000"
+    #         - "9001:9001"
+    #     environment:
+    #         MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+    #         MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+    #     command: server /data --console-address ":9001"
+    #     volumes:
+    #         - minio-data:/data
+    #     networks:
+    #         - myrvm-network
+
+networks:
+    myrvm-network:
+        driver: bridge
+
+volumes:
+    db-data:
+    redis-data:
+    minio-data:
+
+secrets:
+    db_password:
+        file: .secrets/db_password.txt
+    db_username:
+        file: .secrets/db_username.txt
