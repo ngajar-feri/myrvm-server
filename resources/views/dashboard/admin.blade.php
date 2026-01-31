@@ -143,48 +143,45 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($machines as $machine)
                             <tr>
-                                <td>Mall Grand Indonesia</td>
-                                <td>RVM-JKT-001</td>
-                                <td><span class="badge bg-label-success">Online</span></td>
+                                <td>{{ $machine->location ?? $machine->name }}</td>
+                                <td>{{ $machine->serial_number }}</td>
+                                <td>
+                                    @php
+                                        $status = $machine->status; // Trigger accessor
+                                        $badgeClass = 'bg-label-secondary';
+                                        $statusLabel = ucfirst($status);
+                                        
+                                        if ($status === 'online') $badgeClass = 'bg-label-success';
+                                        elseif ($status === 'offline') $badgeClass = 'bg-label-danger';
+                                        elseif ($status === 'maintenance') $badgeClass = 'bg-label-warning';
+                                    @endphp
+                                    <span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
+                                </td>
                                 <td>
                                     <div class="d-flex align-items-center">
+                                        @php
+                                            $capacity = $machine->capacity_percentage ?? 0;
+                                            $progressClass = 'bg-success';
+                                            if ($capacity >= 90) $progressClass = 'bg-danger';
+                                            elseif ($capacity >= 70) $progressClass = 'bg-warning';
+                                        @endphp
                                         <div class="progress w-100 me-3" style="height: 8px;">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: 45%" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                            <div class="progress-bar {{ $progressClass }}" role="progressbar" style="width: {{ $capacity }}%" aria-valuenow="{{ $capacity }}" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
-                                        <span>45%</span>
+                                        <span>{{ $capacity }}%</span>
                                     </div>
                                 </td>
-                                <td>2 mins ago</td>
-                            </tr>
-                            <tr>
-                                <td>Stasiun Gambir</td>
-                                <td>RVM-JKT-002</td>
-                                <td><span class="badge bg-label-warning">Full Warning</span></td>
                                 <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="progress w-100 me-3" style="height: 8px;">
-                                            <div class="progress-bar bg-danger" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <span>90%</span>
-                                    </div>
+                                    @if($machine->last_ping)
+                                        {{ $machine->last_ping->diffForHumans() }}
+                                    @else
+                                        Never
+                                    @endif
                                 </td>
-                                <td>1 hour ago</td>
                             </tr>
-                            <tr>
-                                <td>Kantor Pusat MyRVM</td>
-                                <td>RVM-JKT-003</td>
-                                <td><span class="badge bg-label-success">Online</span></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="progress w-100 me-3" style="height: 8px;">
-                                            <div class="progress-bar bg-info" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <span>15%</span>
-                                    </div>
-                                </td>
-                                <td>5 mins ago</td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\RvmMachine;
 
 class DashboardController extends Controller
 {
@@ -14,7 +15,8 @@ class DashboardController extends Controller
         // In a real app, you might use Policies or dedicated Controllers per role
         
         if ($user->role === 'admin' || $user->role === 'super_admin') {
-            return view('dashboard.admin');
+            $machines = RvmMachine::with('edgeDevice')->get();
+            return view('dashboard.admin', compact('machines'));
         }
         
         if ($user->role === 'operator') {
