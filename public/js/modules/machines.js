@@ -129,9 +129,20 @@ class MachineManagement {
             const params = new URLSearchParams({ status: statusFilter, location: locationFilter });
 
             // Use apiHelper with Bearer Token for authenticated API call
+            console.log('DEBUG: Fetching machines. Token length:', (window.API_TOKEN || '').length);
             const response = await apiHelper.get(`/api/v1/rvm-machines?${params}`);
 
-            if (!response || !response.ok) throw new Error('Failed to load machines');
+            if (response) {
+                console.log('DEBUG: API Response status:', response.status);
+            } else {
+                console.log('DEBUG: API Response is null (likely auth redirect)');
+            }
+
+            if (!response || !response.ok) {
+                 const text = response ? await response.text() : 'No response';
+                 console.error('DEBUG: API Error Body:', text);
+                 throw new Error('Failed to load machines');
+            }
 
             const data = await response.json();
             this.machines = data.data || data;
