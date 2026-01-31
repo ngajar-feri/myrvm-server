@@ -1116,6 +1116,19 @@ class EdgeDeviceController extends Controller
              return response()->json(['status' => 'error', 'message' => 'Machine auth failed'], 401);
         }
 
+        // Check if machine has active Technician Assignment
+        // Only allow heartbeat if a technician is assigned (Hak Akses RVM)
+        $hasAssignment = \App\Models\TechnicianAssignment::where('rvm_machine_id', $machine->id)
+            ->whereIn('status', ['assigned', 'in_progress', 'active'])
+            ->exists();
+
+        if (!$hasAssignment) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'Heartbeat rejected: No active technician assignment (Hak Akses RVM required).'
+            ], 403);
+        }
+
         // Map 'discovery' from Python client to 'hardware_info' if needed
         if ($request->has('discovery') && !$request->has('hardware_info')) {
             $request->merge(['hardware_info' => $request->discovery]);
