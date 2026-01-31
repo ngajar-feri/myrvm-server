@@ -205,8 +205,9 @@ class LogController extends Controller
 
         if ($request->input('format') === 'pdf') {
             // Ensure memory limit is sufficient for PDF generation
-            ini_set('memory_limit', '256M');
-            ini_set('max_execution_time', 300);
+            // Increased to 512M to prevent OOM on large datasets
+            ini_set('memory_limit', '512M');
+            ini_set('max_execution_time', 600);
 
             $pdf = Pdf::loadView('dashboard.logs.pdf', ['logs' => $logs]);
 
