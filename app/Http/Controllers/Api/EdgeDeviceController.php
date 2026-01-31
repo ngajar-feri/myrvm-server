@@ -1108,8 +1108,8 @@ class EdgeDeviceController extends Controller
      */
     public function heartbeatEdge(Request $request)
     {
-        // Debug: Log incoming payload
-        \Log::info('Heartbeat Edge Payload:', $request->all());
+        // Debug: Log incoming payload (Selected fields only)
+        \Log::info('Heartbeat Edge Payload:', $request->only(['hardware_id', 'status', 'version', 'tailscale_ip']));
 
         $machine = $request->attributes->get('rvm_machine');
         if (!$machine) {
