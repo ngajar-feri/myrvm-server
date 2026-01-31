@@ -1,103 +1,126 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ♻️ MyRVM Project - Reverse Vending Machine System v1.0
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-10-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Vue.js](https://img.shields.io/badge/Vue.js-3-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Tailscale](https://img.shields.io/badge/Tailscale-Connect-black?style=for-the-badge&logo=tailscale&logoColor=white)
 
-## MyRVM-Server Overview
-
-Timestamp Backup: 12012026-0027
-Code: [TR1]
-
-### Deskripsi
-MyRVM-Server adalah backend untuk sistem Reverse Vending Machine (RVM) yang menyediakan:
-- Autentikasi (Laravel Sanctum)
-- API Transaksi (Start, Item, Commit)
-- Redemption Voucher (User & Tenant)
-- Modul Teknisi (Assignment, PIN, Maintenance Logs)
-- Telemetry dan Heartbeat untuk perangkat Edge
-- Dokumentasi API menggunakan L5-Swagger
-
-### Struktur Direktori Utama
-- `app/`: Controllers, Models, Middleware, Policies
-- `routes/`: `api.php` (endpoint API), `web.php` (dashboard), routes middleware
-- `database/`: Migrations, Seeders (termasuk demo accounts & mesin)
-- `config/`: Konfigurasi aplikasi (termasuk `l5-swagger.php`)
-- `storage/api-docs/`: `api-docs.json` (Swagger JSON yang ditampilkan di dashboard)
-- `resources/views/`: Blade templates (dashboard, auth, swagger UI vendor)
-
-### Dokumentasi API
-- Swagger UI: `/api/documentation` (iframe pada dashboard)
-- Auto-Authorize: Token login otomatis diisi ke Authorize via `responseInterceptor`
-- Status kode respons telah dilengkapi (200, 201, 302, 400, 401, 403, 404, 422, 500)
-
-### Demo Credentials
-- Super Admin: `superadmin@myrvm.com` / `password123`
-- Admin: `admin@myrvm.com` / `password123`
-- Operator: `operator@myrvm.com` / `password123`
-- Technician: `tech@myrvm.com` / `password123`
-- Tenant: `tenant@starbucks.com` / `password123`
-- User 1: `john@example.com` / `password123` (500 poin)
-- User 2: `jane@example.com` / `password123` (1500 poin)
-- User 3: `bob@example.com` / `password123` (250 poin)
-
-### Catatan Penting
-- Pastikan `.env` terkonfigurasi untuk environment Anda (DB, SANCTUM, APP_URL).
-- Jalankan `php artisan migrate --force` jika diperlukan.
-- Untuk regenerate docs: gunakan `l5-swagger:generate` (atau update manual `api-docs.json`).
+> **Modern, Scalable, and Secure Reverse Vending Machine Ecosystem**
+> *Providing AI-driven waste management solutions with real-time telemetry and robust economy systems.*
 
 ---
 
-## About Laravel
+## 📖 Project Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**MyRVM (Reverse Vending Machine)** adalah ekosistem komprehensif yang mengintegrasikan perangkat keras RVM (Edge AI), backend server yang kuat, dan aplikasi pengguna untuk memfasilitasi daur ulang sampah botol plastik/kaleng secara cerdas. Sistem ini menggunakan teknologi **Computer Vision (YOLO11 + SAM2)** untuk deteksi objek secara real-time dan **Tailscale VPN** untuk komunikasi jaringan yang aman antar perangkat.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### ✨ Key Features
+- **🤖 AI-Powered Detection:** Integrasi Computer Vision untuk identifikasi botol/kaleng akurat.
+- **🔐 Secure Networking:** Komunikasi antar RVM-Edge dan Server via Private VPN (Tailscale).
+- **💸 Economy System:** Manajemen poin, voucher, dan transaksi user secara real-time.
+- **📊 Real-time Telemetry:** Monitoring kesehatan perangkat (Heartbeat, Logs, Status).
+- **📱 Multi-Platform Support:** Backend siap untuk Mobile Apps (User/Tenant) dan Web Dashboard.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📂 Repository Structure
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Repositori ini terdiri dari beberapa komponen utama:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. [🖥️ MyRVM-Server](./MyRVM-Server)
+Backend utama sistem yang dibangun menggunakan **Laravel 10**.
+- **Path:** `./MyRVM-Server`
+- **Fungsi:**
+    - RESTful API (Authentication, Transaction, Redemption).
+    - Web Dashboard untuk Admin/Operator.
+    - WebSocket Server (Laravel Reverb) untuk komunikasi real-time.
+    - Database Management (PostgreSQL).
+- **Dokumentasi API:** Tersedia via Swagger UI di `/api/documentation`.
 
-## Laravel Sponsors
+### 2. [📚 Docs (Dokumentasi Proyek)](./Docs)
+Pusat informasi teknis dan manajerial proyek.
+- **Path:** `./Docs`
+- **Isi:**
+    - **Overview:** Arsitektur sistem, topologi jaringan, dan alur kerja.
+    - **Plan:** Roadmap pengembangan, rencana integrasi API, dan strategi testing.
+    - **Changelog:** Catatan perubahan dan status proyek.
+    - **Concept:** Penjelasan konsep RVM v2 dan modernisasi backend.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🚀 Quick Start Guide
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Prerequisites
+- PHP 8.1+
+- Composer
+- PostgreSQL
+- Node.js & NPM
 
-## Contributing
+### Installation (Server)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1.  **Clone Repository:**
+    ```bash
+    git clone https://github.com/ngajar-feri/MyRVM1.git
+    cd MyRVM1/MyRVM-Server
+    ```
 
-## Code of Conduct
+2.  **Install Dependencies:**
+    ```bash
+    composer install
+    npm install
+    ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3.  **Environment Setup:**
+    ```bash
+    cp .env.example .env
+    # Konfigurasi DB_*, SANCTUM_*, APP_URL di .env
+    php artisan key:generate
+    ```
 
-## Security Vulnerabilities
+4.  **Database & Seeding:**
+    ```bash
+    php artisan migrate --seed
+    ```
+    *(Default credentials tersedia di `MyRVM-Server/README.md`)*
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5.  **Run Application:**
+    ```bash
+    php artisan serve
+    npm run dev
+    ```
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User[User Apps] -->|API| Server[MyRVM Server Laravel 12]
+    RVM[RVM Edge Jetson Nano Orin] -->|VPN/API| Server
+    Server -->|Store| DB[(PostgreSQL)]
+    Server -->|Cache| Redis
+    Server -->|Objects| MinIO
+    Admin[Web Dashboard] -->|Inertia/Vue| Server
+```
+
+---
+
+## 🔐 Credentials (Demo)
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Super Admin** | `superadmin@myrvm.com` | `password123` |
+| **Admin** | `admin@myrvm.com` | `password123` |
+| **Operator** | `operator@myrvm.com` | `password123` |
+| **Technician** | `tech@myrvm.com` | `password123` |
+| **User** | `john@example.com` | `password123` |
+
+---
+
+## 📞 Contact & Support
+
+Project ini dikembangkan untuk tujuan edukasi dan implementasi sistem RVM modern.
+Untuk pertanyaan teknis, silakan lihat folder [Docs](./Docs) atau hubungi tim pengembang.
+
+---
+*© 2026 MyRVM Project. All Rights Reserved.*
