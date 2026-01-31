@@ -38,11 +38,16 @@
     <link rel="stylesheet" href="{{ asset('css/assignments.css') }}" />
     <!-- Helpers -->
     <script src="/vendor/assets/vendor/js/helpers.js"></script>
+    <script>
+        // Fix for config.js expecting data-assets-path which might not be ready
+        window.assetsPath = document.documentElement.getAttribute('data-assets-path') || '/vendor/assets/';
+    </script>
     <script src="/vendor/assets/js/config.js"></script>
 
     <!-- API Token for Dashboard -->
     <script>
         window.API_TOKEN = "{{ session('api_token', '') }}";
+        console.log('API Token Init:', window.API_TOKEN ? 'Present' : 'Missing');
     </script>
 </head>
 

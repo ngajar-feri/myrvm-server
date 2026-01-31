@@ -50,17 +50,20 @@ const apiHelper = {
         };
 
         try {
+            console.log(`[API] Fetching: ${url}`);
             const response = await fetch(url, mergedOptions);
 
             // Handle 401/403 - redirect to login (unless skipAuthRedirect is true)
             if ((response.status === 401 || response.status === 403) && !skipAuthRedirect) {
+                console.warn('[API] Auth Error:', response.status);
                 window.location.href = '/login';
                 return null;
             }
 
             return response;
         } catch (error) {
-            console.error('API Helper Error:', error);
+            console.error('[API] Network/Fetch Error:', error);
+            console.error('[API] Failed URL:', url);
             throw error;
         }
     },

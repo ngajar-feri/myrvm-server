@@ -52,8 +52,16 @@ class RvmMachine extends Model
             return 'maintenance';
         }
 
-        // If last_ping is older than 2 minutes, it's offline
-        if (!$this->last_ping || abs($this->last_ping->diffInSeconds(now())) > 120) {
+        if (!$this->last_ping) {
+            return 'offline';
+        }
+
+        $diff = abs($this->last_ping->diffInSeconds(now()));
+        
+        // Debug log for status calculation
+        \Log::info("Machine {$this->id} ({$this->name}) Status Check: LastPing={$this->last_ping}, Now=" . now() . ", Diff={$diff}s");
+
+        if ($diff > 120) {
             return 'offline';
         }
 
