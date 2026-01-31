@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="layout-navbar-fixed layout-wide" data-skin="default" data-template="front-pages-no-customizer" data-bs-theme="light">
+<html lang="en" class="layout-navbar-fixed layout-wide" data-skin="default" data-template="front-pages-no-customizer" data-bs-theme="light" data-assets-path="/vendor/assets/">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />

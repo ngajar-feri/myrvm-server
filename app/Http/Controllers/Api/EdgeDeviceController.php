@@ -128,7 +128,10 @@ class EdgeDeviceController extends Controller
         ]);
 
         // Update last ping machine status
-        $machine->update(['last_ping' => now()]);
+        $machine->update([
+            'last_ping' => now(),
+            'status' => 'online'
+        ]);
 
         return response()->json([
             'status' => 'success',

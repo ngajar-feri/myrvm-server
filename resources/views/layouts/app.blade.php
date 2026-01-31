@@ -42,7 +42,7 @@
         // Fix for config.js expecting data-assets-path which might not be ready
         window.assetsPath = document.documentElement.getAttribute('data-assets-path') || '/vendor/assets/';
     </script>
-    <script src="/vendor/assets/js/config.js"></script>
+    <script src="/vendor/assets/js/config.js?v={{ time() }}"></script>
 
     <!-- API Token for Dashboard -->
     <script>

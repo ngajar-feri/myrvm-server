@@ -8,6 +8,11 @@
 'use strict';
 
 window.assetsPath = document.documentElement.getAttribute('data-assets-path');
+
+// Fix for null assetsPath
+if (!window.assetsPath) {
+    window.assetsPath = '/vendor/assets/';
+}
 window.templateName = document.documentElement.getAttribute('data-template');
 
 // JS global variables
