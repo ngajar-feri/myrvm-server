@@ -77,6 +77,11 @@ class ActivityLog extends Model
      */
     public static function log($module, $action, $description = null, $userId = null)
     {
+        // Only log critical actions
+        if (!in_array($action, ['Delete', 'Error', 'Warning'])) {
+            return null;
+        }
+
         $agent = new Agent();
         $userAgent = request()->userAgent();
         $agent->setUserAgent($userAgent);
