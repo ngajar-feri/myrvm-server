@@ -210,7 +210,7 @@ class MachineManagement {
                             <h6 class="card-title mb-0">${this.escapeHtml(machine.name)}</h6>
                             <div class="d-flex gap-1 align-items-center">
                                 ${edgeStatusBadge}
-                                <span class="badge badge-status-${machine.status || 'offline'}">
+                                <span class="badge badge-status-online">
                                     ${machine.status || 'offline'}
                                 </span>
                                 ${deleteBtn}
