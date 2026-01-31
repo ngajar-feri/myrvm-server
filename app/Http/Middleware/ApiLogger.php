@@ -20,14 +20,14 @@ class ApiLogger
         $response = $next($request);
         $duration = microtime(true) - $startTime;
 
-        Log::info('API Request:', [
-            'ip' => $request->ip(),
-            'method' => $request->method(),
-            'url' => $request->fullUrl(),
-            'user_id' => $request->user() ? $request->user()->id : null,
-            'status' => $response->getStatusCode(),
-            'duration' => round($duration * 1000, 2) . 'ms',
-        ]);
+        // Log::info('API Request:', [
+        //     'ip' => $request->ip(),
+        //     'method' => $request->method(),
+        //     'url' => $request->fullUrl(),
+        //     'user_id' => $request->user() ? $request->user()->id : null,
+        //     'status' => $response->getStatusCode(),
+        //     'duration' => round($duration * 1000, 2) . 'ms',
+        // ]);
 
         return $response;
     }
