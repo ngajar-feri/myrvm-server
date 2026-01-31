@@ -134,6 +134,7 @@ class MachineManagement {
 
             if (response) {
                 console.log('DEBUG: API Response status:', response.status);
+                console.log('DEBUG: Machines status:', machine.status);
             } else {
                 console.log('DEBUG: API Response is null (likely auth redirect)');
             }
