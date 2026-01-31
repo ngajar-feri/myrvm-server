@@ -270,7 +270,7 @@
     <!-- Main JS -->
     <script src="/vendor/assets/js/main.js"></script>
     <!-- API Helper for Dashboard API calls -->
-    <script src="{{ asset('js/api-helper.js') }}"></script>
+    <script src="{{ asset('js/api-helper.js') }}?v={{ time() }}"></script>
     <!-- SPA Navigator -->
     <script src="{{ asset('js/spa-navigator.js') }}?v={{ time() }}"></script>
     <!-- Leaflet.js (OpenStreetMap) -->
