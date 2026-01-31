@@ -62,11 +62,12 @@ class RvmMachine extends Model
             // \Log::info("Machine {$this->id} ({$this->name}) Status Check: LastPing={$this->last_ping}, Now=" . now() . ", Diff={$diff}s, DB_Status={$value}");
 
             // Relaxed threshold to 5 minutes (300s) to account for potential clock drift
-            if ($diff > 300) {
-                return 'offline';
-            }
+        if ($diff > 300) {
+            return 'offline';
+        }
 
-        return $value;
+        // If ping is recent, force online if value is null
+        return $value ?: 'online';
     }
 
     /**
