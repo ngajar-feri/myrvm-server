@@ -41,7 +41,9 @@ window.config = {
   enableMenuLocalStorage: true // Enable menu state with local storage support
 };
 
-window.assetsPath = document.documentElement.getAttribute('data-assets-path');
+if (!window.assetsPath) {
+  window.assetsPath = document.documentElement.getAttribute('data-assets-path');
+}
 window.templateName = document.documentElement.getAttribute('data-template');
 
 // Check if assetsPath is set, if not, warn the user

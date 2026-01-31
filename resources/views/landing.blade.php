@@ -78,7 +78,7 @@
             <a href="{{ route('login') }}" class="btn btn-primary btn-lg">Mulai</a>
           </div>
           <div class="col-md-6">
-            <img src="/vendor/assets/img/front-pages/landing/hero-dashboard.png" class="img-fluid" alt="Hero" />
+            <img src="/vendor/assets/img/front-pages/landing-page/hero-dashboard-light.png" class="img-fluid" alt="Hero" />
           </div>
         </div>
       </div>

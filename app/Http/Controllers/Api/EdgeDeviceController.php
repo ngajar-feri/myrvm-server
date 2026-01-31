@@ -25,7 +25,7 @@ class EdgeDeviceController extends Controller
      */
     public function index(Request $request)
     {
-        $query = EdgeDevice::with('rvmMachine:id,serial_number,location,status');
+        $query = EdgeDevice::with('rvmMachine:id,serial_number,location,status,last_ping');
 
         // Filter by status if provided
         if ($request->has('status') && $request->status) {

@@ -268,7 +268,7 @@
     <!-- Vendors JS -->
     <script src="/vendor/assets/vendor/libs/apex-charts/apexcharts.js"></script>
     <!-- Main JS -->
-    <script src="/vendor/assets/js/main.js"></script>
+    <script src="/vendor/assets/js/main.js?v={{ time() }}"></script>
     <!-- API Helper for Dashboard API calls -->
     <script src="{{ asset('js/api-helper.js') }}?v={{ time() }}"></script>
     <!-- SPA Navigator -->
