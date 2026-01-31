@@ -53,7 +53,7 @@ class RvmMachine extends Model
         }
 
         // If last_ping is older than 2 minutes, it's offline
-        if (!$this->last_ping || $this->last_ping->diffInMinutes(now()) > 2) {
+        if (!$this->last_ping || abs($this->last_ping->diffInSeconds(now())) > 120) {
             return 'offline';
         }
 
