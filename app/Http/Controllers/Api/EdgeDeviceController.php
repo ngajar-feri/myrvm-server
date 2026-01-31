@@ -1137,7 +1137,7 @@ class EdgeDeviceController extends Controller
         // Update RVM Machine last_ping and capacity
         $machine->update([
             'last_ping' => now(),
-            'status' => 'online',
+            'status' => $machine->status,
             'capacity_percentage' => $request->bin_capacity ?? $machine->capacity_percentage
         ]);
 
@@ -1145,7 +1145,7 @@ class EdgeDeviceController extends Controller
         $edgeDevice = EdgeDevice::where('rvm_machine_id', $machine->id)->first();
         if ($edgeDevice) {
             $updateData = [
-                'status' => 'online',
+                'status' => $machine->status,
                 'updated_at' => now(),
                 'health_metrics' => $request->health_metrics ?? $edgeDevice->health_metrics,
                 'ip_address_local' => $request->ip_local ?? $edgeDevice->ip_address_local,
