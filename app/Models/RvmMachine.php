@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 
 class RvmMachine extends Model
 {
+    protected $appends = ['status'];
+
     protected $fillable = [
         'name',
         'uuid',

@@ -44,7 +44,7 @@ class MachineManagement {
             } else {
                 this.stopGlobalPolling();
             }
-        }, 30000); // Poll every 30 seconds
+        }, 10000); // Poll every 10 seconds (optimized from 30s)
     }
 
     stopGlobalPolling() {
