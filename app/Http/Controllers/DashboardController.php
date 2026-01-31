@@ -10,6 +10,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        // Ensure API token exists in session for dashboard AJAX calls
+        if (!session()->has('api_token')) {
+            $token = $user->createToken('dashboard-token')->plainTextToken;
+            session(['api_token' => $token]);
+        }
         
         // Simple Role-Based Redirect / View Rendering
         // In a real app, you might use Policies or dedicated Controllers per role
