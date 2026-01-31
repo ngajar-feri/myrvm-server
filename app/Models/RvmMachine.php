@@ -41,6 +41,24 @@ class RvmMachine extends Model
     ];
 
     /**
+     * Virtual Status Accessor
+     * Automatically calculates if device is offline based on last_ping
+     */
+    public function getStatusAttribute($value)
+    {
+        if ($value === 'maintenance') {
+            return 'maintenance';
+        }
+
+        // If last_ping is older than 2 minutes, it's offline
+        if (!$this->last_ping || $this->last_ping->diffInMinutes(now()) > 2) {
+            return 'offline';
+        }
+
+        return $value;
+    }
+
+    /**
      * Auto-generate serial_number on creation.
      * Note: api_key is NOT auto-generated here. It will be generated
      * when a Technician is assigned to this machine (via Assignment flow).

@@ -88,11 +88,29 @@ class EdgeDevice extends Model
     }
 
     /**
-     * Check if device is online (heartbeat within last 5 minutes).
+     * Check if device is online (heartbeat within last 2 minutes).
      */
     public function isOnline(): bool
     {
         return $this->status === 'online';
+    }
+
+    /**
+     * Virtual Status Accessor
+     * Automatically calculates if device is offline based on updated_at
+     */
+    public function getStatusAttribute($value)
+    {
+        if ($value === 'maintenance' || $value === 'inactive') {
+            return $value;
+        }
+
+        // If updated_at is older than 2 minutes, it's offline
+        if ($this->updated_at && $this->updated_at->diffInMinutes(now()) > 2) {
+            return 'offline';
+        }
+
+        return $value;
     }
 
     /**

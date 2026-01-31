@@ -34,12 +34,12 @@ class EdgeDeviceController extends Controller
 
         $devices = $query->orderBy('updated_at', 'desc')->get();
 
-        // Calculate stats
+        // Calculate stats using filter to ensure accessors are triggered
         $stats = [
             'total' => $devices->count(),
-            'online' => $devices->where('status', 'online')->count(),
-            'offline' => $devices->where('status', 'offline')->count(),
-            'maintenance' => $devices->where('status', 'maintenance')->count(),
+            'online' => $devices->filter(fn($d) => $d->status === 'online')->count(),
+            'offline' => $devices->filter(fn($d) => $d->status === 'offline')->count(),
+            'maintenance' => $devices->filter(fn($d) => $d->status === 'maintenance')->count(),
             'avg_cpu' => $this->calculateAverageMetric($devices, 'cpu_usage'),
             'avg_gpu' => $this->calculateAverageMetric($devices, 'gpu_usage'),
             'avg_temp' => $this->calculateAverageMetric($devices, 'temperature'),

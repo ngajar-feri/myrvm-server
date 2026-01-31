@@ -9,6 +9,7 @@ class MachineManagement {
         this.viewMode = 'grid'; // grid or list
         this.bootstrapReady = false;
         this.pollingTimer = null;
+        this.globalPollingTimer = null; // New timer for machine list
         this.init();
     }
 
@@ -18,7 +19,10 @@ class MachineManagement {
                 this.waitForBootstrap().then(() => {
                     this.setupEventListeners();
                     this.loadMachines();
+                    this.startGlobalPolling(); // Start global polling
                 });
+            } else {
+                this.stopGlobalPolling(); // Stop if navigating away
             }
         });
 
@@ -26,7 +30,27 @@ class MachineManagement {
             this.waitForBootstrap().then(() => {
                 this.setupEventListeners();
                 this.loadMachines();
+                this.startGlobalPolling(); // Start global polling
             });
+        }
+    }
+
+    startGlobalPolling() {
+        if (this.globalPollingTimer) clearInterval(this.globalPollingTimer);
+        this.globalPollingTimer = setInterval(() => {
+            // Only poll if the machines grid exists (we are on the machines page)
+            if (document.getElementById('machines-grid')) {
+                this.loadMachines();
+            } else {
+                this.stopGlobalPolling();
+            }
+        }, 30000); // Poll every 30 seconds
+    }
+
+    stopGlobalPolling() {
+        if (this.globalPollingTimer) {
+            clearInterval(this.globalPollingTimer);
+            this.globalPollingTimer = null;
         }
     }
 
