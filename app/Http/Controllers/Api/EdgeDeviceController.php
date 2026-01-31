@@ -1108,6 +1108,9 @@ class EdgeDeviceController extends Controller
      */
     public function heartbeatEdge(Request $request)
     {
+        // Debug: Log incoming payload
+        \Log::info('Heartbeat Edge Payload:', $request->all());
+
         $machine = $request->attributes->get('rvm_machine');
         if (!$machine) {
              return response()->json(['status' => 'error', 'message' => 'Machine auth failed'], 401);
