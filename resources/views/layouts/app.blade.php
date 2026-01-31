@@ -46,7 +46,7 @@
 
     <!-- API Token for Dashboard -->
     <script>
-        window.API_TOKEN = "{{ session('api_token', '') }}";
+        window.API_TOKEN = "{{ $api_token ?? session('api_token', '') }}";
         console.log('API Token Init:', window.API_TOKEN ? 'Present' : 'Missing');
     </script>
 </head>
