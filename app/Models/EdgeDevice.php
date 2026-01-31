@@ -108,8 +108,8 @@ class EdgeDevice extends Model
             return $value;
         }
 
-        // If updated_at is older than 2 minutes, it's offline
-        if ($this->updated_at && $this->updated_at->diffInMinutes(now()) > 2) {
+        // If updated_at is older than 5 minutes (300s), it's offline
+        if ($this->updated_at && $this->updated_at->diffInSeconds(now()) > 300) {
             return 'offline';
         }
 
