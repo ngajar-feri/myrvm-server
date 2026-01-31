@@ -226,33 +226,7 @@ class EdgeDeviceController extends Controller
         ]);
     }
 
-    /**
-     * Handle heartbeat from Edge Device (No ID in URL).
-     * Matches /edge/heartbeat route.
-     */
-    public function heartbeatEdge(Request $request)
-    {
-        $request->validate([
-            'hardware_id' => 'required|string',
-        ]);
 
-        $edgeDevice = EdgeDevice::where('device_id', $request->hardware_id)->first();
-
-        if (!$edgeDevice) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Device not found'
-            ], 404);
-        }
-
-        // Map 'discovery' from Python client to 'hardware_info' for the controller
-        if ($request->has('discovery') && !$request->has('hardware_info')) {
-            $request->merge(['hardware_info' => $request->discovery]);
-        }
-
-        // Forward to existing logic, passing the ID
-        return $this->heartbeat($request, $edgeDevice->rvm_machine_id);
-    }
 
     /**
      * Register new Edge device.
@@ -1139,6 +1113,11 @@ class EdgeDeviceController extends Controller
              return response()->json(['status' => 'error', 'message' => 'Machine auth failed'], 401);
         }
 
+        // Map 'discovery' from Python client to 'hardware_info' if needed
+        if ($request->has('discovery') && !$request->has('hardware_info')) {
+            $request->merge(['hardware_info' => $request->discovery]);
+        }
+
         // Update RVM Machine last_ping and capacity
         $machine->update([
             'last_ping' => now(),
@@ -1156,6 +1135,21 @@ class EdgeDeviceController extends Controller
                 'ip_address_local' => $request->ip_local ?? $edgeDevice->ip_address_local,
                 'tailscale_ip' => $request->tailscale_ip ?? $edgeDevice->tailscale_ip
             ];
+
+            // Auto-update Hardware Info & Camera ID
+            if ($request->has('hardware_info')) {
+                $updateData['hardware_info'] = $request->hardware_info;
+
+                // Extract Camera ID from the first camera in the list
+                if (isset($request->hardware_info['cameras']) && is_array($request->hardware_info['cameras']) && count($request->hardware_info['cameras']) > 0) {
+                    $camera = $request->hardware_info['cameras'][0];
+                    if (isset($camera['path'])) {
+                        $updateData['camera_id'] = $camera['path'];
+                    } elseif (isset($camera['id'])) {
+                        $updateData['camera_id'] = $camera['id'];
+                    }
+                }
+            }
 
             // Update firmware version if provided
             if ($request->has('version')) {

@@ -157,12 +157,31 @@
     document.addEventListener('DOMContentLoaded', function() {
         var machineModal = document.getElementById('machineDetailModal');
         if (machineModal) {
+            // Remove aria-hidden immediately on load just in case
+            machineModal.removeAttribute('aria-hidden');
+            
             machineModal.addEventListener('show.bs.modal', function () {
                 this.removeAttribute('aria-hidden');
             });
+            
             machineModal.addEventListener('shown.bs.modal', function () {
                 this.removeAttribute('aria-hidden');
+                // Force focus to close button if needed, but safe
             });
+            
+            // Watch for attribute changes to prevent re-addition while visible
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'aria-hidden') {
+                        if (machineModal.getAttribute('aria-hidden') === 'true' && 
+                            machineModal.classList.contains('show')) {
+                            machineModal.removeAttribute('aria-hidden');
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(machineModal, { attributes: true });
         }
     });
 </script>
