@@ -227,6 +227,34 @@ class EdgeDeviceController extends Controller
     }
 
     /**
+     * Handle heartbeat from Edge Device (No ID in URL).
+     * Matches /edge/heartbeat route.
+     */
+    public function heartbeatEdge(Request $request)
+    {
+        $request->validate([
+            'hardware_id' => 'required|string',
+        ]);
+
+        $edgeDevice = EdgeDevice::where('device_id', $request->hardware_id)->first();
+
+        if (!$edgeDevice) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Device not found'
+            ], 404);
+        }
+
+        // Map 'discovery' from Python client to 'hardware_info' for the controller
+        if ($request->has('discovery') && !$request->has('hardware_info')) {
+            $request->merge(['hardware_info' => $request->discovery]);
+        }
+
+        // Forward to existing logic, passing the ID
+        return $this->heartbeat($request, $edgeDevice->rvm_machine_id);
+    }
+
+    /**
      * Register new Edge device.
      */
     public function register(Request $request)

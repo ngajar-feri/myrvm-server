@@ -57,14 +57,14 @@ class RvmMachine extends Model
         }
 
         $diff = abs($this->last_ping->diffInSeconds(now()));
-        
-        // Debug log for status calculation
-        \Log::info("Machine {$this->id} ({$this->name}) Status Check: LastPing={$this->last_ping}, Now=" . now() . ", Diff={$diff}s");
+            
+            // Debug log for status calculation (TEMPORARY: Remove in production if too noisy)
+            // \Log::info("Machine {$this->id} ({$this->name}) Status Check: LastPing={$this->last_ping}, Now=" . now() . ", Diff={$diff}s, DB_Status={$value}");
 
-        // Relaxed threshold to 5 minutes (300s) to account for potential clock drift
-        if ($diff > 300) {
-            return 'offline';
-        }
+            // Relaxed threshold to 5 minutes (300s) to account for potential clock drift
+            if ($diff > 300) {
+                return 'offline';
+            }
 
         return $value;
     }

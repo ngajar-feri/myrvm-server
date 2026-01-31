@@ -152,6 +152,21 @@
     </div>
 </div>
 
+<script>
+    // Fix for Aria-Hidden warning
+    document.addEventListener('DOMContentLoaded', function() {
+        var machineModal = document.getElementById('machineDetailModal');
+        if (machineModal) {
+            machineModal.addEventListener('show.bs.modal', function () {
+                this.removeAttribute('aria-hidden');
+            });
+            machineModal.addEventListener('shown.bs.modal', function () {
+                this.removeAttribute('aria-hidden');
+            });
+        }
+    });
+</script>
+
 <!-- Add Machine Modal - Bio-Digital Minimalism 2026 Multi-Step Wizard -->
 <style>
     /* Bio-Digital Minimalism 2026 - Add Machine Wizard */
