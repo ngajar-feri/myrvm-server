@@ -134,7 +134,6 @@ class MachineManagement {
 
             if (response) {
                 console.log('DEBUG: API Response status:', response.status);
-                console.log('DEBUG: Machines status:', machine.status);
             } else {
                 console.log('DEBUG: API Response is null (likely auth redirect)');
             }
@@ -147,6 +146,14 @@ class MachineManagement {
 
             const data = await response.json();
             this.machines = data.data || data;
+
+            // DEBUG: Log machine statuses to console
+            console.log('DEBUG: Machine Statuses:', this.machines.map(m => ({ 
+                name: m.name, 
+                status: m.status,
+                last_ping: m.last_ping,
+                edge_status: m.edge_device?.status
+            })));
 
             this.renderMachines();
             this.updateStats();
