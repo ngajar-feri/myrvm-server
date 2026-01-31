@@ -155,6 +155,7 @@ class MachineManagement {
                 edge_status: m.edge_device?.status
             })));
 
+
             this.renderMachines();
             this.updateStats();
 
@@ -391,7 +392,8 @@ class MachineManagement {
                                 <button class="btn btn-xs btn-outline-warning btn-restart-edge" data-id="${machine.id}" style="font-size: 0.65rem; padding: 2px 8px;">
                                     <i class="ti tabler-power me-1"></i> Restart
                                 </button>
-                                <span class="badge badge-status-${edgeDevice.status || 'offline'}">${edgeDevice.status || 'offline'}</span>
+                                <!-- Fix: Use machine.status (calculated from heartbeat) instead of edgeDevice.status (static DB value) -->
+                                <span class="badge badge-status-${machine.status || 'offline'}">${machine.status || 'offline'}</span>
                             </div>
                         </div>
                         <div class="card-body">
