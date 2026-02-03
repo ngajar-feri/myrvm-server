@@ -438,6 +438,13 @@ class UserController extends Controller
      */
     public function createUser(Request $request)
     {
+        // Normalize email before validation
+        if ($request->has('email')) {
+            $request->merge([
+                'email' => strtolower(trim($request->email))
+            ]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users,email',
@@ -447,22 +454,37 @@ class UserController extends Controller
             'points_balance' => 'nullable|integer|min:0',
         ]);
 
-        $user = \App\Models\User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'status' => $request->status ?? 'active',
-            'points_balance' => $request->points_balance ?? 0,
-        ]);
+        try {
+            $user = \App\Models\User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+                'status' => $request->status ?? 'active',
+                'points_balance' => $request->points_balance ?? 0,
+            ]);
 
-        ActivityLog::log('User', 'Create', "Admin {$request->user()->name} created user: {$user->name} ({$user->email})", $request->user()->id);
+            ActivityLog::log('User', 'Create', "Admin {$request->user()->name} created user: {$user->name} ({$user->email})", $request->user()->id);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User created successfully',
-            'data' => $user
-        ], 201);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User created successfully',
+                'data' => $user
+            ], 201);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The email has already been taken (Database unique violation)',
+                'errors' => [
+                    'email' => ['The email has already been taken.']
+                ]
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create user: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

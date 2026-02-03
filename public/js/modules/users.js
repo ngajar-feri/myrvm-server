@@ -162,6 +162,33 @@ class UserManagement {
                 this.toggleSelectAll(e.target.checked);
             });
         }
+
+        // Setup modal listeners
+        this.setupModalListeners();
+    }
+
+    setupModalListeners() {
+        const createUserModal = document.getElementById('createUserModal');
+        if (createUserModal) {
+            createUserModal.addEventListener('show.bs.modal', () => {
+                this.resetValidation('create-user-form');
+            });
+        }
+
+        const editUserModal = document.getElementById('editUserModal');
+        if (editUserModal) {
+            editUserModal.addEventListener('show.bs.modal', () => {
+                this.resetValidation('edit-user-form');
+            });
+        }
+    }
+
+    resetValidation(formId) {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        }
     }
 
     async fetchCurrentUserRole() {
@@ -522,7 +549,10 @@ class UserManagement {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create user');
+                const error = new Error(errorData.message || 'Failed to create user');
+                error.status = response.status;
+                error.errors = errorData.errors;
+                throw error;
             }
 
             this.showSuccess('User created successfully');
@@ -536,9 +566,33 @@ class UserManagement {
             this.loadStats();
 
         } catch (error) {
-            console.error('Error creating user:', error);
-            this.showError(error.message || 'Failed to create user');
+            if (error.status === 422 && error.errors) {
+                this.handleValidationErrors(document.getElementById('create-user-form'), error.errors);
+            } else {
+                if (error.status !== 422) {
+                    console.error('Error creating user:', error);
+                }
+                this.showError(error.message || 'Failed to create user');
+            }
         }
+    }
+
+    handleValidationErrors(form, errors) {
+        // Clear previous validation states
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+        // Apply new errors
+        Object.keys(errors).forEach(field => {
+            const input = form.querySelector(`[name="${field}"]`);
+            if (input) {
+                input.classList.add('is-invalid');
+                const feedback = input.nextElementSibling;
+                if (feedback && feedback.classList.contains('invalid-feedback')) {
+                    feedback.textContent = errors[field][0];
+                }
+            }
+        });
     }
 
     async editUser(userId) {
@@ -601,7 +655,10 @@ class UserManagement {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update user');
+                const error = new Error(errorData.message || 'Failed to update user');
+                error.status = response.status;
+                error.errors = errorData.errors;
+                throw error;
             }
 
             this.showSuccess('User updated successfully');
@@ -614,8 +671,14 @@ class UserManagement {
             this.loadStats();
 
         } catch (error) {
-            console.error('Error updating user:', error);
-            this.showError(error.message || 'Failed to update user');
+            if (error.status === 422 && error.errors) {
+                this.handleValidationErrors(document.getElementById('edit-user-form'), error.errors);
+            } else {
+                if (error.status !== 422) {
+                    console.error('Error updating user:', error);
+                }
+                this.showError(error.message || 'Failed to update user');
+            }
         }
     }
 
@@ -1208,11 +1271,15 @@ class UserManagement {
     }
 
     showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = 'position-fixed top-0 end-0 p-3';
-        toast.style.zIndex = '9999';
-        toast.innerHTML = `
-            <div class="toast show" role="alert">
+        const container = document.getElementById('toast-container');
+        if (!container) {
+            console.error('Toast container not found');
+            return;
+        }
+
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header bg-${type} text-white">
                     <i class="ti tabler-${type === 'success' ? 'check' : 'alert-circle'} me-2"></i>
                     <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
@@ -1223,9 +1290,29 @@ class UserManagement {
                 </div>
             </div>
         `;
-        document.body.appendChild(toast);
-
-        setTimeout(() => toast.remove(), 5000);
+        
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        const toastEl = document.getElementById(toastId);
+        
+        if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
+            const toast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 5000
+            });
+            toast.show();
+            
+            // Remove after hidden
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+        } else {
+            // Fallback for non-bootstrap environments
+            toastEl.classList.remove('hide');
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.remove();
+            }, 5000);
+        }
     }
 }
 

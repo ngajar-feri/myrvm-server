@@ -249,6 +249,9 @@
         <div class="layout-overlay layout-menu-toggle"></div>
         <!-- Drag Target Area To SlideIn Menu On Small Screens -->
         <div class="drag-target"></div>
+        
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11000;"></div>
     </div>
     <!-- / Layout wrapper -->
 

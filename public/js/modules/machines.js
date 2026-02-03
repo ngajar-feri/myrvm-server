@@ -257,6 +257,9 @@ class MachineManagement {
             const data = await response.json();
             const machine = data.data || data;
             
+            // Log heartbeat payload as requested by user
+            this.logHeartbeatPayload(machine);
+            
             // Render content
             const html = this.renderMachineDetailTemplate(machine);
             
@@ -342,14 +345,26 @@ class MachineManagement {
                                 <div class="spinner-grow text-success spinner-grow-sm" role="status" style="width: 0.5rem; height: 0.5rem;" title="Live Updates Active"></div>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-xs btn-primary btn-manual-update" data-id="${machine.id}" style="font-size: 0.65rem; padding: 2px 8px;">
-                                    <i class="ti tabler-refresh me-1"></i> Update
-                                </button>
-                                <button class="btn btn-xs btn-outline-warning btn-restart-edge" data-id="${machine.id}" style="font-size: 0.65rem; padding: 2px 8px;">
-                                    <i class="ti tabler-power me-1"></i> Restart
-                                </button>
-                                <span class="badge badge-status-${edgeDevice.status || 'offline'}">${edgeDevice.status || 'offline'}</span>
+                                ${(edgeDevice.status === 'online' || machine.status === 'maintenance') ? `
+                                <div class="dropdown">
+                                    <button class="btn btn-xs btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.65rem; padding: 2px 8px;">
+                                        <i class="ti tabler-settings me-1"></i> Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" style="font-size: 0.75rem;">
+                                        <li><h6 class="dropdown-header"><i class="ti tabler-code me-1"></i>Firmware</h6></li>
+                                        <li><a class="dropdown-item btn-manual-update" href="#" data-id="${machine.id}"><i class="ti tabler-refresh me-1"></i>Update Service</a></li>
+                                        <li><a class="dropdown-item btn-restart-edge" href="#" data-id="${machine.id}"><i class="ti tabler-power me-1"></i>Restart Service</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header"><i class="ti tabler-cpu me-1"></i>Hardware</h6></li>
+                                        <li><a class="dropdown-item btn-reboot-edge" href="#" data-id="${machine.id}"><i class="ti tabler-refresh-dot me-1"></i>Restart (Soft Reboot)</a></li>
+                                        <li><a class="dropdown-item btn-maintenance-edge ${machine.status === 'maintenance' ? 'text-danger' : ''}" href="#" data-id="${machine.id}" data-status="${machine.status}"><i class="ti ${machine.status === 'maintenance' ? 'tabler-player-stop' : 'tabler-tool'} me-1"></i>${machine.status === 'maintenance' ? 'Exit Maintenance' : 'Maintenance Mode'}</a></li>
+                                    </ul>
+                                </div>
+                                ` : ''}
+                                <span class="badge badge-status-${machine.status === 'maintenance' ? 'maintenance' : (edgeDevice.status || 'offline')}">${machine.status === 'maintenance' ? 'maintenance' : (edgeDevice.status || 'offline')}</span>
                             </div>
+
+
                         </div>
                         <div class="card-body">
                             <div class="row g-3 mb-3">
@@ -579,6 +594,47 @@ class MachineManagement {
         }, 10000);
     }
 
+    logHeartbeatPayload(machine) {
+        if (!machine || !machine.edge_device) return;
+        
+        const edge = machine.edge_device;
+        const metrics = edge.health_metrics || {};
+        const hw = edge.hardware_info || {};
+        
+        // Status safety check
+        const status = edge.status || 'N/A';
+        
+        const timestamp = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        console.log(`%c[EDGE HEARTBEAT] ${machine.name} @ ${timestamp}`, "color: #10b981; font-weight: bold; font-size: 12px;");
+        console.log(`%c--------------------------------------------------
+ID MESIN        : ${machine.serial_number}
+DEVICE ID       : ${edge.device_id}
+STATUS          : ${status.toUpperCase()}
+LAST HEARTBEAT  : ${edge.updated_at || 'N/A'}
+IP LOCAL        : ${edge.ip_address_local || 'N/A'}
+IP TAILSCALE    : ${edge.tailscale_ip || 'N/A'}
+
+[METRIK KESEHATAN]
+CPU USAGE       : ${(metrics.cpu_usage_percent || 0).toFixed(1)}%
+MEMORY USAGE    : ${(metrics.memory_usage_percent || 0).toFixed(1)}%
+DISK USAGE      : ${(metrics.disk_usage_percent || 0).toFixed(1)}%
+CPU TEMP        : ${(metrics.cpu_temperature || 0).toFixed(1)}°C
+
+[PERANGKAT KERAS]
+CONTROLLER      : ${edge.type || 'N/A'}
+FIRMWARE        : ${edge.system_info?.firmware_version || 'N/A'}
+SENSORS         : ${hw.sensors?.length || 0} unit
+ACTUATORS       : ${hw.actuators?.length || 0} unit
+CAMERAS         : ${hw.cameras?.length || 0} unit
+
+[STATISTIK]
+BIN CAPACITY    : ${machine.capacity_percentage || 0}%
+TODAY DEPOSITS  : ${machine.today_count || 0}
+TOTAL DEPOSITS  : ${machine.total_count || 0}
+--------------------------------------------------`, "color: #34d399; font-family: monospace;");
+    }
+
     async _old_viewMachine(machineId) {
         await this.waitForBootstrap();
 
@@ -654,14 +710,26 @@ class MachineManagement {
                                     <div class="spinner-grow text-success spinner-grow-sm ms-2" role="status" style="width: 0.5rem; height: 0.5rem;" title="Live Updates Active"></div>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <button class="btn btn-xs btn-primary btn-manual-update" data-id="${machine.id}" style="font-size: 0.65rem; padding: 2px 8px;">
-                                        <i class="ti tabler-refresh me-1"></i> Update
-                                    </button>
-                                    <button class="btn btn-xs btn-outline-warning btn-restart-edge" data-id="${machine.id}" style="font-size: 0.65rem; padding: 2px 8px;">
-                                        <i class="ti tabler-power me-1"></i> Restart
-                                    </button>
-                                    <span class="badge badge-status-${edgeDevice.status || 'offline'}">${edgeDevice.status || 'offline'}</span>
+                                    ${(edgeDevice.status === 'online' || machine.status === 'maintenance') ? `
+                                    <div class="dropdown">
+                                        <button class="btn btn-xs btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.65rem; padding: 2px 8px;">
+                                            <i class="ti tabler-settings me-1"></i> Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" style="font-size: 0.75rem;">
+                                            <li><h6 class="dropdown-header"><i class="ti tabler-code me-1"></i>Firmware</h6></li>
+                                            <li><a class="dropdown-item btn-manual-update" href="#" data-id="${machine.id}"><i class="ti tabler-refresh me-1"></i>Update Service</a></li>
+                                            <li><a class="dropdown-item btn-restart-edge" href="#" data-id="${machine.id}"><i class="ti tabler-power me-1"></i>Restart Service</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><h6 class="dropdown-header"><i class="ti tabler-cpu me-1"></i>Hardware</h6></li>
+                                            <li><a class="dropdown-item btn-reboot-edge" href="#" data-id="${machine.id}"><i class="ti tabler-refresh-dot me-1"></i>Restart (Soft Reboot)</a></li>
+                                            <li><a class="dropdown-item btn-maintenance-edge ${machine.status === 'maintenance' ? 'text-danger' : ''}" href="#" data-id="${machine.id}" data-status="${machine.status}"><i class="ti ${machine.status === 'maintenance' ? 'tabler-player-stop' : 'tabler-tool'} me-1"></i>${machine.status === 'maintenance' ? 'Exit Maintenance' : 'Maintenance Mode'}</a></li>
+                                        </ul>
+                                    </div>
+                                    ` : ''}
+                                    <span class="badge badge-status-${machine.status === 'maintenance' ? 'maintenance' : (edgeDevice.status || 'offline')}">${machine.status === 'maintenance' ? 'maintenance' : (edgeDevice.status || 'offline')}</span>
                                 </div>
+
+
                             </div>
                             <div class="card-body">
                                 <div class="row g-3">
@@ -1380,16 +1448,45 @@ const machineWizard = {
     }
 };
 
-// Manual Command Handlers (Manual Update / Restart)
+// Manual Command Handlers (Update / Restart / Reboot / Maintenance)
 document.addEventListener('click', async (e) => {
     const btnUpdate = e.target.closest('.btn-manual-update');
     const btnRestart = e.target.closest('.btn-restart-edge');
+    const btnReboot = e.target.closest('.btn-reboot-edge');
+    const btnMaintenance = e.target.closest('.btn-maintenance-edge');
     
-    if (!btnUpdate && !btnRestart) return;
+    if (!btnUpdate && !btnRestart && !btnReboot && !btnMaintenance) return;
     
-    const id = btnUpdate ? btnUpdate.dataset.id : btnRestart.dataset.id;
-    const action = btnUpdate ? 'GIT_PULL' : 'RESTART';
-    const label = btnUpdate ? 'Git Pull' : 'Restart';
+    // Prevent default for anchor tags
+    e.preventDefault();
+    
+    let id, action, label;
+    
+    if (btnUpdate) {
+        id = btnUpdate.dataset.id;
+        action = 'UPDATE_SERVICE';
+        label = 'Update Service';
+    } else if (btnRestart) {
+        id = btnRestart.dataset.id;
+        action = 'RESTART';
+        label = 'Restart Service';
+    } else if (btnReboot) {
+        id = btnReboot.dataset.id;
+        action = 'REBOOT';
+        label = 'Soft Reboot';
+    } else if (btnMaintenance) {
+        id = btnMaintenance.dataset.id;
+        // Check current status from data attribute
+        const currentStatus = btnMaintenance.dataset.status;
+        if (currentStatus === 'maintenance') {
+            action = 'EXIT_MAINTENANCE';
+            label = 'Exit Maintenance';
+        } else {
+            action = 'MAINTENANCE';
+            label = 'Enter Maintenance';
+        }
+    }
+
 
     try {
         const response = await apiHelper.post(`/api/v1/edge/devices/${id}/command`, { action });
@@ -1402,6 +1499,16 @@ document.addEventListener('click', async (e) => {
         const result = await response.json();
         if (result.status === 'success') {
             machineManagement.showSuccess(`Perintah ${label} berhasil dikirim ke antrean! Perangkat akan mengeksekusi pada heartbeat berikutnya.`);
+            
+            // Open Playground modal when entering maintenance mode
+            if (action === 'MAINTENANCE') {
+                setTimeout(() => {
+                    openPlaygroundModal(id);
+                    machineManagement.loadMachines();
+                }, 1000);
+            } else if (action === 'EXIT_MAINTENANCE') {
+                setTimeout(() => machineManagement.loadMachines(), 1000);
+            }
         } else {
             machineManagement.showError(`Gagal mengirim perintah: ${result.message}`);
         }
@@ -1409,6 +1516,7 @@ document.addEventListener('click', async (e) => {
         machineManagement.showError(`Error: ${error.message}`);
     }
 });
+
 
 // Reset wizard when modal is hidden
 document.addEventListener('hidden.bs.modal', (e) => {
@@ -1419,6 +1527,24 @@ document.addEventListener('hidden.bs.modal', (e) => {
     if (e.target?.id === 'machineSuccessModal') {
         machineWizard.lastCredentials = null;
         machineWizard.apiKeyVisible = false;
+    }
+    
+    // Cleanup Playground modal on close
+    if (e.target?.id === 'playgroundModal') {
+        const modalBody = document.getElementById('playgroundModalBody');
+        if (modalBody) {
+            modalBody.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+        }
+        // Clear playground instance
+        if (window.playground) {
+            window.playground = null;
+        }
     }
 
     // Force cleanup any lingering modal backdrops
@@ -1434,3 +1560,56 @@ document.addEventListener('hidden.bs.modal', (e) => {
         }
     }, 100);
 });
+
+/**
+ * Open Playground Modal for a specific machine
+ * @param {number} machineId - The machine ID to open playground for
+ */
+async function openPlaygroundModal(machineId) {
+    const modalEl = document.getElementById('playgroundModal');
+    const modalBody = document.getElementById('playgroundModalBody');
+    
+    if (!modalEl || !modalBody) {
+        console.error('Playground modal elements not found');
+        return;
+    }
+    
+    // Show modal first with loading spinner
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    
+    try {
+        // Fetch playground content
+        const response = await fetch(`/dashboard/machines/${machineId}/playground-content`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        modalBody.innerHTML = html;
+        
+        // Initialize PlaygroundManager if script loaded
+        setTimeout(() => {
+            if (window.PLAYGROUND_CONFIG && typeof PlaygroundManager !== 'undefined') {
+                const playground = new PlaygroundManager(window.PLAYGROUND_CONFIG);
+                playground.init();
+                window.playground = playground;
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error loading playground:', error);
+        modalBody.innerHTML = `
+            <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100vh;">
+                <i class="bi bi-exclamation-triangle text-danger" style="font-size: 48px;"></i>
+                <p class="mt-3 text-danger">Failed to load Playground</p>
+                <p class="text-muted">${error.message}</p>
+                <button class="btn btn-secondary mt-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        `;
+    }
+}
+
+// Make function globally accessible
+window.openPlaygroundModal = openPlaygroundModal;

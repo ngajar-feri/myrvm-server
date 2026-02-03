@@ -71,33 +71,55 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        // Normalize email before validation
+        if ($request->has('email')) {
+            $request->merge([
+                'email' => strtolower(trim($request->email))
+            ]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user', // Default role for public registration
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'user', // Default role for public registration
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Log successful registration via API
-        ActivityLog::log('Auth', 'Create', "New user registered via API: {$user->name} ({$user->email})", $user->id);
+            // Log successful registration via API
+            ActivityLog::log('Auth', 'Create', "New user registered via API: {$user->name} ({$user->email})", $user->id);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Registrasi berhasil',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-                'token_type' => 'Bearer',
-            ]
-        ], 201);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Registrasi berhasil',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token,
+                    'token_type' => 'Bearer',
+                ]
+            ], 201);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'The email has already been taken (Database unique violation)',
+                'errors' => [
+                    'email' => ['The email has already been taken.']
+                ]
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Registration failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

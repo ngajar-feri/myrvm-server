@@ -19,19 +19,43 @@ services:
             DB_PASSWORD_FILE: /run/secrets/db_password
             DB_USERNAME_FILE: /run/secrets/db_username
 
+    scheduler:
+        image: myrvm-ecosystem-v2-app:latest
+        container_name: myrvm-scheduler
+        restart: unless-stopped
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        networks:
+            - myrvm-network
+        depends_on:
+            - db
+            - redis
+        secrets:
+            - db_password
+            - db_username
+        environment:
+            DB_PASSWORD_FILE: /run/secrets/db_password
+            DB_USERNAME_FILE: /run/secrets/db_username
+        command: php artisan schedule:work
+
     web:
         image: nginx:alpine
         container_name: myrvm-web
         restart: unless-stopped
         ports:
             - "8001:80"
+            - "443:443"
         volumes:
             - ./:/var/www
             - ./docker/nginx/conf.d:/etc/nginx/conf.d
+            - ./docker/nginx/certs:/etc/nginx/certs
         networks:
             - myrvm-network
         depends_on:
             - app
+        labels:
+          - "dev.orbstack.domains=myrvm.orb.local"
 
     db:
         image: postgres:15-alpine

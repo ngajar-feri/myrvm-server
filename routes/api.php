@@ -16,6 +16,9 @@ use App\Http\Controllers\Api\RedemptionController;
 use App\Http\Controllers\Api\TechnicianController;
 use App\Http\Controllers\Api\CVController;
 use App\Http\Controllers\Api\AssignmentController;
+use App\Http\Controllers\Api\LogBackupController;
+use App\Http\Controllers\Api\PlaygroundController;
+
 
 // Kiosk API Controllers
 use App\Http\Controllers\Api\Kiosk\SessionController as KioskSessionController;
@@ -186,6 +189,13 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/logs/export', [LogController::class, 'export']); // Export route
     Route::get('/logs', [LogController::class, 'index']);
 
+    // Log Backups Management
+    Route::get('/logs/backups', [LogBackupController::class, 'index']);
+    Route::post('/logs/backups', [LogBackupController::class, 'store']);
+    Route::post('/logs/backups/restore', [LogBackupController::class, 'restore']);
+    Route::get('/logs/backups/download/{filename}', [LogBackupController::class, 'download']);
+    Route::delete('/logs/clear', [LogBackupController::class, 'destroyAll']);
+
     // Technician Assignments (Hak Akses RVM) - Complete CRUD
     Route::get('/technician-assignments', [\App\Http\Controllers\Api\TechnicianAssignmentController::class, 'index']);
     Route::post('/technician-assignments', [\App\Http\Controllers\Api\TechnicianAssignmentController::class, 'store']);
@@ -227,4 +237,27 @@ Route::prefix('v1/kiosk')->middleware(['throttle:60,1'])->group(function () {
     // Configuration
     Route::get('/config', [KioskConfigController::class, 'getConfig']);
     Route::post('/config/theme', [KioskConfigController::class, 'updateTheme']);
+});
+
+// =============================================================================
+// Playground API Routes (Engineering Dashboard for Maintenance Mode)
+// =============================================================================
+// These endpoints power the remote simulation & debugging console.
+Route::middleware('auth:sanctum')->prefix('v1/playground')->group(function () {
+    // CV Model Management
+    Route::get('/models', [PlaygroundController::class, 'getModels']);
+    Route::post('/models/{slug}/download', [PlaygroundController::class, 'downloadModel']);
+    Route::post('/models/upload', [PlaygroundController::class, 'uploadModel']);
+    
+    // IoT Component Inspector
+    Route::get('/machines/{machineId}/components', [PlaygroundController::class, 'getComponents']);
+    Route::post('/machines/{machineId}/components/read', [PlaygroundController::class, 'readComponent']);
+    Route::post('/machines/{machineId}/components/trigger', [PlaygroundController::class, 'triggerComponent']);
+    
+    // Remote System Shell
+    Route::get('/shell/commands', [PlaygroundController::class, 'getShellCommands']);
+    Route::post('/machines/{machineId}/shell/execute', [PlaygroundController::class, 'executeShellCommand']);
+    
+    // Vision Inference
+    Route::post('/machines/{machineId}/inference', [PlaygroundController::class, 'runInference']);
 });

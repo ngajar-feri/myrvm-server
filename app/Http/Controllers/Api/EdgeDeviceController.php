@@ -216,10 +216,15 @@ class EdgeDeviceController extends Controller
             $edgeDevice->update($updateData);
         }
 
+        // Retrieve and clear any pending commands for this device
+        $cacheKey = "edge_cmd_{$machine->id}";
+        $commands = Cache::pull($cacheKey, []);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Heartbeat received',
-            'server_time' => now()->toIso8601String()
+            'server_time' => now()->toIso8601String(),
+            'commands' => $commands
         ]);
     }
 
@@ -1150,10 +1155,18 @@ class EdgeDeviceController extends Controller
     public function sendCommand(Request $request, $id)
     {
         $validated = $request->validate([
-            'action' => 'required|string|in:GIT_PULL,RESTART'
+            'action' => 'required|string|in:GIT_PULL,UPDATE_SERVICE,RESTART,REBOOT,MAINTENANCE,EXIT_MAINTENANCE'
         ]);
 
         $machine = RvmMachine::findOrFail($id);
+        
+        // Handle maintenance mode status changes
+        if ($validated['action'] === 'MAINTENANCE') {
+            $machine->update(['status' => 'maintenance']);
+        } elseif ($validated['action'] === 'EXIT_MAINTENANCE') {
+            // Revert to offline, heartbeat will set it back to online
+            $machine->update(['status' => 'offline']);
+        }
         
         // Store command in cache for 10 minutes
         $cacheKey = "edge_cmd_{$machine->id}";
@@ -1169,6 +1182,7 @@ class EdgeDeviceController extends Controller
             'message' => "Command {$validated['action']} queued for device {$machine->name}."
         ]);
     }
+
 
     /**
      * Generate signed kiosk URL for RVM-UI browser.

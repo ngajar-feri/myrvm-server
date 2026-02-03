@@ -100,4 +100,30 @@ class MachineController extends Controller
             'transaction_stats' => $transactionStats
         ]);
     }
+
+    /**
+     * Display the Maintenance Playground for remote engineering.
+     */
+    public function playground($id)
+    {
+        $machine = RvmMachine::with('edgeDevice')->findOrFail($id);
+        
+        // Only allow if machine is in maintenance mode
+        if ($machine->status !== 'maintenance') {
+            return redirect()->route('dashboard.machines')
+                ->with('error', 'Machine must be in maintenance mode to access Playground.');
+        }
+        
+        return view('dashboard.machines.playground', compact('machine'));
+    }
+
+    /**
+     * Return playground content for AJAX modal loading.
+     */
+    public function playgroundContent($id)
+    {
+        $machine = RvmMachine::with('edgeDevice')->findOrFail($id);
+        
+        return view('dashboard.machines.playground-content', compact('machine'));
+    }
 }

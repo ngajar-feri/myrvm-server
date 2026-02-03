@@ -592,3 +592,19 @@
         </div>
     </div>
 </div>
+
+<!-- Playground Modal (Fullscreen) -->
+<div class="modal fade" id="playgroundModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content" style="background: #F9F9F9;">
+            <div class="modal-body p-0" id="playgroundModalBody">
+                <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="{{ asset('css/playground.css') }}?v={{ time() }}"">

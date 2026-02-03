@@ -15,6 +15,12 @@ class LogsManagement {
             date_to: ''
         };
 
+        this.backupFilters = {
+            search: '',
+            range: ''
+        };
+
+        this.backups = [];
         this.init();
     }
 
@@ -84,6 +90,44 @@ class LogsManagement {
                 this.filters.date_to = dateTo.value;
                 this.currentPage = 1;
                 this.loadLogs();
+            });
+        }
+
+        // Tab events
+        const backupsTab = document.getElementById('backups-tab');
+        const liveLogsTab = document.getElementById('live-logs-tab');
+
+        if (backupsTab) {
+            backupsTab.addEventListener('shown.bs.tab', () => {
+                document.getElementById('logs-actions').classList.add('d-none');
+                document.getElementById('backups-actions').classList.remove('d-none');
+                this.loadBackups();
+            });
+        }
+
+        if (liveLogsTab) {
+            liveLogsTab.addEventListener('shown.bs.tab', () => {
+                document.getElementById('logs-actions').classList.remove('d-none');
+                document.getElementById('backups-actions').classList.add('d-none');
+                this.loadLogs();
+            });
+        }
+
+        // Backup search
+        const backupSearch = document.getElementById('backup-search');
+        if (backupSearch) {
+            backupSearch.addEventListener('input', this.debounce(() => {
+                this.backupFilters.search = backupSearch.value;
+                this.renderBackups();
+            }, 500));
+        }
+
+        // Backup range filter
+        const rangeFilter = document.getElementById('backup-range-filter');
+        if (rangeFilter) {
+            rangeFilter.addEventListener('change', () => {
+                this.backupFilters.range = rangeFilter.value;
+                this.renderBackups();
             });
         }
     }
@@ -356,7 +400,347 @@ class LogsManagement {
         }
     }
 
-    // Utility functions
+    // Backup Methods
+    async loadBackups() {
+        try {
+            const tbody = document.getElementById('backups-table-body');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            const response = await apiHelper.get('/api/v1/logs/backups');
+            if (!response.ok) throw new Error('Failed to load backups');
+
+            const data = await response.json();
+            this.backups = data.data;
+            this.renderBackups();
+
+        } catch (error) {
+            console.error('Error loading backups:', error);
+            this.showBackupError('Failed to load backups. Please try again.');
+        }
+    }
+
+    renderBackups() {
+        const tbody = document.getElementById('backups-table-body');
+        if (!tbody) return;
+
+        let filtered = this.backups;
+
+        // Apply Search
+        if (this.backupFilters.search) {
+            const search = this.backupFilters.search.toLowerCase();
+            filtered = filtered.filter(b => 
+                b.filename.toLowerCase().includes(search) || 
+                b.date_folder.toLowerCase().includes(search)
+            );
+        }
+
+        // Apply Range Filter
+        if (this.backupFilters.range) {
+            const days = parseInt(this.backupFilters.range);
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - days);
+            
+            filtered = filtered.filter(b => new Date(b.created_at) >= cutoff);
+        }
+
+        document.getElementById('backup-count-info').textContent = `${filtered.length} Backups found`;
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="ti tabler-database-off" style="font-size: 3rem; color: #ccc;"></i>
+                            <div class="mt-2 text-muted">No backups found</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(b => `
+            <tr>
+                <td>
+                    <span class="badge bg-label-primary">${this.escapeHtml(b.date_folder)}</span>
+                </td>
+                <td>
+                    <span class="fw-semibold">${this.escapeHtml(b.filename)}</span>
+                </td>
+                <td>
+                    <small class="text-muted">${(b.size_bytes / 1024).toFixed(2)} KB</small>
+                </td>
+                <td>
+                    <small>${this.formatDateTime(b.created_at)}</small>
+                </td>
+                <td class="text-end">
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-success" onclick="logsManagement.restoreBackup('${b.path}')" title="Restore">
+                            <i class="ti tabler-restore"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="logsManagement.downloadBackup('${b.filename}')" title="Download">
+                            <i class="ti tabler-download"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async createBackup() {
+        if (!confirm('Are you sure you want to create a full backup of all activity logs?')) return;
+
+        const btn = document.querySelector('button[onclick="logsManagement.createBackup()"]');
+        const originalHtml = btn.innerHTML;
+        
+        try {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+            btn.disabled = true;
+
+            const response = await apiHelper.post('/api/v1/logs/backups');
+            const data = await response.json();
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Backup Created',
+                    text: 'Logs have been successfully backed up to storage.',
+                    confirmButtonColor: '#3085d6'
+                });
+                this.loadBackups();
+            } else {
+                throw new Error(data.message || 'Backup failed');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+
+    createBackup() {
+        let modalElement = document.getElementById('createBackupConfirmModal');
+        let modal = bootstrap.Modal.getInstance(modalElement);
+        if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+        }
+        modal.show();
+    }
+
+    async confirmCreateBackup() {
+        const confirmBtn = document.getElementById('confirm-create-backup-btn');
+        const modalElement = document.getElementById('createBackupConfirmModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+
+        try {
+            // Disable button and show loading state
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+
+            const response = await apiHelper.post('/api/v1/logs/backups');
+            const data = await response.json();
+
+            if (response.ok) {
+                if (modal) modal.hide();
+                
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Backup Created',
+                    text: 'System activity logs have been backed up successfully.',
+                    footer: `File: <code class="ms-1">${data.filename || 'Backup Created'}</code>`,
+                    customClass: {
+                        confirmButton: 'btn btn-primary px-4'
+                    },
+                    buttonsStyling: false
+                });
+                
+                // Refresh backups list
+                this.loadBackups();
+            } else {
+                throw new Error(data.message || 'Backup failed');
+            }
+        } catch (error) {
+            console.error('Create Backup Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Operation Failed',
+                text: error.message,
+                customClass: {
+                    confirmButton: 'btn btn-primary px-4'
+                },
+                buttonsStyling: false
+            });
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="ti tabler-database-export me-2"></i>Create Backup';
+        }
+    }
+
+    async restoreBackup(path) {
+        const result = await Swal.fire({
+            title: 'Restore Logs?',
+            text: "This will add the logs from the backup file into your current activity logs. No existing data will be deleted.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Restore it!'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            Swal.fire({
+                title: 'Restoring...',
+                text: 'Please wait while we merge the log data.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const response = await apiHelper.post('/api/v1/logs/backups/restore', { file: path });
+            const data = await response.json();
+
+            if (response.ok) {
+                Swal.fire('Restored!', 'Activity logs have been successfully restored.', 'success');
+                this.loadLogs(); // Refresh logs if we're on that tab
+            } else {
+                throw new Error(data.message || 'Restore failed');
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        }
+    }
+
+    downloadBackup(filename) {
+        const token = localStorage.getItem('token');
+        window.location.href = `/api/v1/logs/backups/download/${filename}?token=${token}`;
+    }
+
+    clearAllLogs() {
+        let modalElement = document.getElementById('clearLogsConfirmModal');
+        let modal = bootstrap.Modal.getInstance(modalElement);
+        if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+        }
+        
+        document.getElementById('clear-logs-password').value = '';
+        document.getElementById('clear-logs-password').classList.remove('is-invalid');
+        modal.show();
+    }
+
+    async confirmClearLogs() {
+        const passwordInput = document.getElementById('clear-logs-password');
+        const password = passwordInput.value;
+        const confirmBtn = document.getElementById('confirm-clear-logs-btn');
+        const modalElement = document.getElementById('clearLogsConfirmModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+
+        if (!password) {
+            passwordInput.classList.add('is-invalid');
+            return;
+        }
+
+        try {
+            // Disable button and show loading state
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+            const response = await apiHelper.delete('/api/v1/logs/clear', { password });
+            const data = await response.json();
+
+            if (response.ok) {
+                // Hide modal first
+                if (modal) modal.hide();
+                
+                // Construct footer safely
+                let footerHtml = '';
+                if (data.output && typeof data.output === 'string') {
+                    const parts = data.output.split(':');
+                    if (parts.length > 1) {
+                        footerHtml = `Backup created: <code class="ms-1">${parts.pop().trim()}</code>`;
+                    }
+                }
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'System Cleared',
+                    text: 'All logs have been backed up and deleted successfully.',
+                    footer: footerHtml,
+                    customClass: {
+                        confirmButton: 'btn btn-primary px-4'
+                    },
+                    buttonsStyling: false
+                });
+                
+                // Refresh everything using the global instance to be safe
+                logsManagement.loadLogs();
+                logsManagement.loadStats();
+                logsManagement.loadBackups();
+            } else {
+                if (response.status === 401) {
+                    passwordInput.classList.add('is-invalid');
+                    document.getElementById('clear-logs-password-error').textContent = data.message || 'Invalid password';
+                } else {
+                    throw new Error(data.message || 'Operation failed');
+                }
+            }
+        } catch (error) {
+            console.error('Clear Logs Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Operation Failed',
+                text: error.message,
+                customClass: {
+                    confirmButton: 'btn btn-primary px-4'
+                },
+                buttonsStyling: false
+            });
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="ti tabler-trash me-2"></i>Delete';
+        }
+    }
+
+    clearBackupFilters() {
+        this.backupFilters = {
+            search: '',
+            range: ''
+        };
+
+        const backupSearch = document.getElementById('backup-search');
+        const rangeFilter = document.getElementById('backup-range-filter');
+
+        if (backupSearch) backupSearch.value = '';
+        if (rangeFilter) rangeFilter.value = '';
+
+        this.renderBackups();
+    }
+
+    showBackupError(message) {
+        const tbody = document.getElementById('backups-table-body');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="alert alert-danger">${message}</div>
+                    </td>
+                </tr>
+            `;
+        }
+    }
     getModuleColor(module) {
         const colors = {
             'Auth': 'primary',
@@ -376,7 +760,8 @@ class LogsManagement {
             'Update': 'info',
             'Delete': 'danger',
             'Error': 'danger',
-            'Warning': 'warning'
+            'Warning': 'warning',
+            'Clear': 'warning'
         };
         return colors[action] || 'secondary';
     }

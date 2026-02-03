@@ -98,6 +98,8 @@ Route::middleware('auth')->group(function () {
         // RVM Machines Management
         Route::get('/machines', [App\Http\Controllers\Dashboard\MachineController::class, 'index'])->name('machines');
         Route::get('/machines/content', [App\Http\Controllers\Dashboard\MachineController::class, 'indexContent']);
+        Route::get('/machines/{id}/playground', [App\Http\Controllers\Dashboard\MachineController::class, 'playground'])->name('machines.playground');
+        Route::get('/machines/{id}/playground-content', [App\Http\Controllers\Dashboard\MachineController::class, 'playgroundContent'])->name('machines.playground-content');
 
         // Edge Devices Management
         Route::get('/devices', [App\Http\Controllers\Dashboard\DeviceController::class, 'index'])->name('devices');
