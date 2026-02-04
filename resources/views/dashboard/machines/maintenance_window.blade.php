@@ -528,26 +528,94 @@
                 body: JSON.stringify({ action: 'CAPTURE_IMAGE', port: cameraSelect.value })
             });
             
-            // Mock Result (In real implementation, we'd get URL back or poll for it)
-            // Using a placeholder image for demonstration
-            await new Promise(r => setTimeout(r, 1000));
+            // Record start time to ensure we only show NEW images
+            const commandStartTime = new Date().getTime();
             
-            const resultImg = document.getElementById('result-image');
-            const resultPlaceholder = document.getElementById('result-placeholder');
+            // TWO-PHASE POLLING:
+            // Phase 1: Poll lightweight /capture-status for `last_capture_at > startTime`
+            // Phase 2: Once confirmed, fetch the actual image
             
-            // Random lorem picsum for demo since we don't have real edge upload yet
-            const rand = Math.floor(Math.random() * 1000);
-            resultImg.src = `https://picsum.photos/400/300?random=${rand}`;
-            resultImg.classList.remove('d-none');
-            resultPlaceholder.style.display = 'none';
+            let attempts = 0;
+            const maxAttempts = 60; // 60 * 2s = 120s timeout
             
-            document.getElementById('result-meta').textContent = new Date().toLocaleTimeString();
-            
-            addLog('Image captured and saved to dataset.', 'text-success');
+            const pollCaptureStatus = setInterval(async () => {
+                attempts++;
+                if (attempts > maxAttempts) {
+                    clearInterval(pollCaptureStatus);
+                    addLog('Capture timeout: Device did not respond in time (Check Heartbeat).', 'text-danger');
+                    btnCapture.disabled = false;
+                    btnCapture.innerHTML = originalText;
+                    return;
+                }
+                
+                btnCapture.innerHTML = `<span class="spinner-grow spinner-grow-sm me-2"></span> Waiting for Device (${attempts*2}s)...`;
+
+                try {
+                    // Phase 1: Check capture status
+                    const statusRes = await fetch(`${API_BASE}/rvm-machines/${MACHINE_ID}/capture-status`);
+                    if (!statusRes.ok) return; // Skip this iteration
+                    
+                    const statusJson = await statusRes.json();
+                    const lastCaptureAt = statusJson.data.last_capture_at;
+                    
+                    // DEBUG: Log comparison values
+                    const lastCaptureTime = lastCaptureAt ? new Date(lastCaptureAt).getTime() : 0;
+                    console.log(`DEBUG: commandStartTime=${commandStartTime}, lastCaptureAt=${lastCaptureAt}, lastCaptureTime=${lastCaptureTime}, diff=${lastCaptureTime - commandStartTime}`);
+                    
+                    // Check if capture is newer than button click
+                    if (lastCaptureAt && lastCaptureTime > commandStartTime) {
+                        addLog('Edge confirmed capture. Fetching image...', 'text-info');
+                        
+                        // Phase 2: Fetch actual image
+                        const imageRes = await fetch(`${API_BASE}/rvm-machines/${MACHINE_ID}/latest-image`);
+                        if (imageRes.ok) {
+                            const json = await imageRes.json();
+                            clearInterval(pollCaptureStatus);
+                            
+                            // Display image in RAW FEED (left viewport)
+                            const rawViewport = document.getElementById('viewport-raw');
+                            const rawPlaceholder = document.getElementById('raw-placeholder');
+                            
+                            // Create or update image element in raw viewport
+                            let rawImg = document.getElementById('raw-feed-image');
+                            if (!rawImg) {
+                                rawImg = document.createElement('img');
+                                rawImg.id = 'raw-feed-image';
+                                rawImg.className = 'img-fluid';
+                                // Force sRGB color space rendering for Chrome
+                                rawImg.style.cssText = 'max-height: 100%; max-width: 100%; object-fit: contain; color-interpolation-filters: sRGB; image-rendering: -webkit-optimize-contrast;';
+                                rawViewport.appendChild(rawImg);
+                            }
+                            
+                            rawImg.src = `${json.data.url}?t=${new Date().getTime()}`;
+                            rawPlaceholder.style.display = 'none';
+                            
+                            // Hide LIVE indicator after image is shown
+                            const recIndicator = document.getElementById('rec-indicator');
+                            if (recIndicator) {
+                                recIndicator.style.display = 'none';
+                            }
+                            
+                            // Update capture button to "Recapture"
+                            const captureBtn = document.getElementById('btn-capture-camera');
+                            if (captureBtn) {
+                                captureBtn.innerHTML = '<i class="ti ti-camera-rotate"></i> Recapture';
+                            }
+                            
+                            // Update timestamp (you can add a timestamp display in Raw Feed if needed)
+                            addLog('Image captured and synced successfully.', 'text-success');
+                            
+                            btnCapture.disabled = false;
+                            btnCapture.innerHTML = originalText;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Polling error", e);
+                }
+            }, 2000); // Poll every 2 seconds
 
         } catch (e) {
-            addLog('Capture failed: ' + e.message, 'text-danger');
-        } finally {
+            addLog('Capture command failed: ' + e.message, 'text-danger');
             btnCapture.disabled = false;
             btnCapture.innerHTML = originalText;
         }

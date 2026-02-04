@@ -1134,6 +1134,12 @@ class EdgeDeviceController extends Controller
             $updateData['status'] = 'online';
         }
 
+        // Handle capture_complete flag from Edge (immediate feedback system)
+        if ($request->boolean('capture_complete')) {
+            $updateData['last_capture_at'] = now();
+            \Log::info("Capture complete flag received from Machine {$machine->id}");
+        }
+
         $machine->update($updateData);
 
         // Update Edge Device status/metrics
@@ -1203,14 +1209,32 @@ class EdgeDeviceController extends Controller
     /**
      * Generate signed kiosk URL for RVM-UI browser.
      * 
-     * Uses Laravel's URL::signedRoute() to create a cryptographically
-     * signed URL that is validated by the 'signed' middleware.
+     * Uses Laravel's URL::signedRoute() with environment-aware base URL:
+     * - Production: https://myrvm.penelitian.my.id
+     * - Development/Local: Uses APP_URL from .env
      */
     private function generateSignedKioskUrl(RvmMachine $machine): string
     {
-        return URL::signedRoute('kiosk.index', [
+        // Determine base URL based on environment
+        $baseUrl = config('app.env') === 'production' 
+            ? 'https://myrvm.penelitian.my.id'
+            : config('app.url');
+        
+        \Log::info("generateSignedKioskUrl: APP_ENV=" . config('app.env') . ", baseUrl=" . $baseUrl);
+        
+        // Force root URL for signed route generation (correct Laravel method)
+        URL::forceRootUrl($baseUrl);
+        
+        $signedUrl = URL::signedRoute('kiosk.index', [
             'uuid' => $machine->uuid
         ]);
+        
+        // Reset root URL to default
+        URL::forceRootUrl(null);
+        
+        \Log::info("generateSignedKioskUrl: Generated URL = " . $signedUrl);
+        
+        return $signedUrl;
     }
 
     /**

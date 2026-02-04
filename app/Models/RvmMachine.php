@@ -24,8 +24,10 @@ class RvmMachine extends Model
         'capacity_percentage',
         'last_ping',
         'last_maintenance',
-        'last_model_sync'
+        'last_model_sync',
+        'last_capture_at'
     ];
+
 
     protected $hidden = [
         'api_key',
@@ -36,9 +38,11 @@ class RvmMachine extends Model
         'last_ping' => 'datetime',
         'last_maintenance' => 'datetime',
         'last_model_sync' => 'datetime',
+        'last_capture_at' => 'datetime',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
     ];
+
 
     /**
      * Auto-generate serial_number on creation.

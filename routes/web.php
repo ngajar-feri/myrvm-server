@@ -150,6 +150,12 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+// Route::middleware('auth:sanctum')->group(function () {
+//     // Dataset Image
+//     Route::get('/dataset/image/raw/{filename}', [App\Http\Controllers\Api\DatasetController::class, 'serveImage'])->name('dataset.serve');
+//     Route::get('/rvm-machines/{id}/latest-image', [App\Http\Controllers\Api\DatasetController::class, 'getLatest']);
+// });
+
 // =============================================================================
 // RVM-UI Kiosk Interface (Signed URL - Machine UUID Validated)
 // =============================================================================

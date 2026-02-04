@@ -687,5 +687,31 @@ class RvmMachineController extends Controller
             'skipped' => $skipped
         ]);
     }
+
+    /**
+     * Get capture status for a machine.
+     * Lightweight endpoint for frontend to poll immediately after CAPTURE_IMAGE command.
+     */
+    public function getCaptureStatus(Request $request, $id)
+    {
+        $machine = RvmMachine::select('id', 'last_capture_at')->find($id);
+        
+        if (!$machine) {
+            return response()->json(['status' => 'error', 'message' => 'Machine not found'], 404);
+        }
+
+        $lastCaptureAt = $machine->last_capture_at?->toIso8601String();
+        \Log::info("GetCaptureStatus: Machine {$id}, last_capture_at: " . ($lastCaptureAt ?? 'null'));
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'machine_id' => $machine->id,
+                'last_capture_at' => $lastCaptureAt,
+                'server_time' => now()->toIso8601String()
+            ]
+        ]);
+    }
+
 }
 

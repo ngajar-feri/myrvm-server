@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 
 class DatasetController extends Controller
 {
@@ -22,7 +23,7 @@ class DatasetController extends Controller
     {
         // 1. Validate Request
         $request->validate([
-            'image' => 'required|image|max:10240', // Max 10MB
+            'image' => 'required|file|max:10240', // Max 10MB (Allow file for mock testing)
             'camera_port' => 'nullable|string',
         ]);
 
@@ -49,9 +50,11 @@ class DatasetController extends Controller
             // Custom Name Format: {timestamp}_{randomstring}_raw.jpg
             $filename = "{$timestamp}_{$randomString}_raw." . $file->getClientOriginalExtension();
             
-            // Path: private/dataset/images/raw
-            // Note: 'local' disk usually points to storage/app
-            $path = $file->storeAs('private/dataset/images/raw', $filename, 'local');
+            // Path: on "/storage/app"
+            // and image path is "/dataset/images/raw"
+            // Note: 'local' disk usually points to storage/app but this is bersifat private.
+            // so this path is "/storage/app/private/dataset/images/raw" was right.
+            $path = $file->storeAs('/dataset/images/raw', $filename, 'local');
 
             // 4. Save to Database
             $datasetImage = DatasetImageRaw::create([
@@ -77,5 +80,63 @@ class DatasetController extends Controller
                 'message' => 'Failed to process image: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get the latest raw image for a specific machine.
+     */
+    public function getLatest(Request $request, $id)
+    {
+        try {
+            $image = DatasetImageRaw::where('rvm_machine_id', $id)
+                ->latest('captured_at')
+                ->first();
+
+            if (!$image) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No images found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'url' => route('dataset.serve', ['filename' => $image->filename]),
+                    'captured_at' => $image->captured_at,
+                    'camera_port' => $image->camera_port ?? 'unknown'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error("GetLatest Image Error: " . $e->getMessage() . " Line: " . $e->getLine());
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Serve a private dataset image.
+     */
+    public function serveImage($filename)
+    {
+        // Files are physically located in storage/app/private/dataset/images/raw
+        $path = "dataset/images/raw/{$filename}";
+        
+        Log::info("Checking Path Existence: " . Storage::disk('local')->path($path));
+
+        if (!Storage::disk('local')->exists($path)) {
+            Log::warning("ServeImage: File not found at {$path}");
+            abort(404);
+        }
+
+        // Serve the file AS-IS with proper headers for accurate color rendering
+        // No compression, no conversion - exact file from disk
+        return Storage::disk('local')->response($path, null, [
+            'Content-Type' => Storage::disk('local')->mimeType($path),
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            // Ensure browser doesn't apply color management
+            'X-Content-Type-Options' => 'nosniff'
+        ]);
     }
 }

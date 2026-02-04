@@ -126,6 +126,9 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/dataset/upload', [App\Http\Controllers\Api\DatasetController::class, 'store'])
         ->withoutMiddleware('auth:sanctum')
         ->middleware('validate.rvm.apikey');
+
+    // Route::get('/rvm-machines/{id}/latest-image', [App\Http\Controllers\Api\DatasetController::class, 'getLatest']);
+    // Route::get('/dataset/image/{filename}', [App\Http\Controllers\Api\DatasetController::class, 'serveImage'])->name('dataset.serve');
     
     
     Route::prefix('edge')->group(function () {
@@ -264,4 +267,12 @@ Route::middleware('auth:sanctum')->prefix('v1/playground')->group(function () {
     
     // Vision Inference
     Route::post('/machines/{machineId}/inference', [PlaygroundController::class, 'runInference']);
+});
+Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    // Dataset Image
+    Route::get('/dataset/image/raw/{filename}', [App\Http\Controllers\Api\DatasetController::class, 'serveImage'])->name('dataset.serve');
+    Route::get('/rvm-machines/{id}/latest-image', [App\Http\Controllers\Api\DatasetController::class, 'getLatest']);
+    
+    // Capture Status (Lightweight Polling Endpoint)
+    Route::get('/rvm-machines/{id}/capture-status', [App\Http\Controllers\Api\RvmMachineController::class, 'getCaptureStatus']);
 });
