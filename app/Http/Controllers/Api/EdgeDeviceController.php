@@ -170,10 +170,19 @@ class EdgeDeviceController extends Controller
     {
         // Update RVM Machine
         $machine = RvmMachine::findOrFail($id);
-        $machine->update([
-            'last_ping' => now(),
-            'status' => 'online'
-        ]);
+        
+        // Don't override status if it is in maintenance mode
+        if ($machine->status !== 'maintenance') {
+            $machine->update([
+                'last_ping' => now(),
+                'status' => 'online'
+            ]);
+        } else {
+            // Just update ping time, keep status as maintenance
+            $machine->update([
+                'last_ping' => now()
+            ]);
+        }
 
         // Update EdgeDevice with auto-discovered IP addresses
         $edgeDevice = EdgeDevice::where('rvm_machine_id', $id)->first();
@@ -1114,11 +1123,18 @@ class EdgeDeviceController extends Controller
         }
 
         // Update RVM Machine last_ping and capacity
-        $machine->update([
+        // Update RVM Machine last_ping and capacity
+        $updateData = [
             'last_ping' => now(),
-            'status' => 'online',
             'capacity_percentage' => $request->bin_capacity ?? $machine->capacity_percentage
-        ]);
+        ];
+
+        // Only set online if NOT in maintenance
+        if ($machine->status !== 'maintenance') {
+            $updateData['status'] = 'online';
+        }
+
+        $machine->update($updateData);
 
         // Update Edge Device status/metrics
         $edgeDevice = EdgeDevice::where('rvm_machine_id', $machine->id)->first();
@@ -1155,7 +1171,7 @@ class EdgeDeviceController extends Controller
     public function sendCommand(Request $request, $id)
     {
         $validated = $request->validate([
-            'action' => 'required|string|in:GIT_PULL,UPDATE_SERVICE,RESTART,REBOOT,MAINTENANCE,EXIT_MAINTENANCE'
+            'action' => 'required|string|in:GIT_PULL,UPDATE_SERVICE,RESTART,REBOOT,MAINTENANCE,EXIT_MAINTENANCE,CAMERA_PERMISSION,CAPTURE_IMAGE'
         ]);
 
         $machine = RvmMachine::findOrFail($id);

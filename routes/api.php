@@ -122,6 +122,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::post('/edge/heartbeat', [EdgeDeviceController::class, 'heartbeatEdge'])
         ->withoutMiddleware('auth:sanctum')
         ->middleware('validate.rvm.apikey');
+
+    Route::post('/dataset/upload', [App\Http\Controllers\Api\DatasetController::class, 'store'])
+        ->withoutMiddleware('auth:sanctum')
+        ->middleware('validate.rvm.apikey');
     
     
     Route::prefix('edge')->group(function () {

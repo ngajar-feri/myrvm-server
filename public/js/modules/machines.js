@@ -8,7 +8,8 @@ class MachineManagement {
         this.machines = [];
         this.viewMode = 'grid'; // grid or list
         this.bootstrapReady = false;
-        this.pollingTimer = null;
+        this.pollingTimer = null; // For Detail Modal
+        this.listPollingTimer = null; // For Main List
         this.init();
     }
 
@@ -26,6 +27,7 @@ class MachineManagement {
             this.waitForBootstrap().then(() => {
                 this.setupEventListeners();
                 this.loadMachines();
+                this.startListPolling(); // Start real-time updates
             });
         }
     }
@@ -54,6 +56,31 @@ class MachineManagement {
                 resolve();
             }, 5000);
         });
+    }
+
+    startListPolling() {
+        // Clear any existing timer first
+        this.stopListPolling();
+        
+        // Poll every 5 seconds
+        this.listPollingTimer = setInterval(() => {
+            // Safety check: stop if grid is gone (user navigated away)
+            if (!document.getElementById('machines-grid')) {
+                this.stopListPolling();
+                return;
+            }
+            // Silent reload
+            this.loadMachines();
+        }, 5000);
+        
+        console.log('Real-time updates started for Machine List (5s interval)');
+    }
+
+    stopListPolling() {
+        if (this.listPollingTimer) {
+            clearInterval(this.listPollingTimer);
+            this.listPollingTimer = null;
+        }
     }
 
     setupEventListeners() {
@@ -1482,8 +1509,10 @@ document.addEventListener('click', async (e) => {
             action = 'EXIT_MAINTENANCE';
             label = 'Exit Maintenance';
         } else {
-            action = 'MAINTENANCE';
-            label = 'Enter Maintenance';
+            // New Flow: Open Monitor Window
+            const url = `/dashboard/machines/${id}/maintenance-window`;
+            window.open(url, `maintenance-${id}`, 'width=800,height=600,resizable=yes,scrollbars=yes');
+            return; // Stop here, window handles the rest
         }
     }
 

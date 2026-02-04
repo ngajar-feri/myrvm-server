@@ -177,10 +177,10 @@ export const useKioskStore = defineStore('kiosk', () => {
         // TODO: Implement Laravel Echo when Reverb is configured
         // For now, we'll use polling or manual refresh
 
-        // Simulate connection check
+        // Simulate connection check (Short interval for responsiveness)
         setInterval(() => {
             checkConnection();
-        }, 30000);
+        }, 5000);
     }
 
     /**
@@ -194,8 +194,26 @@ export const useKioskStore = defineStore('kiosk', () => {
                 },
             });
 
+            const data = await response.json();
+            const machineStatus = data.data?.status || 'offline';
+            
             isConnected.value = response.ok;
 
+            // Priority 1: Force Maintenance Screen
+            if (machineStatus === 'maintenance') {
+                if (currentScreen.value !== 'maintenance') {
+                    setScreen('maintenance');
+                }
+                return;
+            }
+
+            // Priority 2: Exit Maintenance if status changed
+            if (currentScreen.value === 'maintenance' && machineStatus !== 'maintenance') {
+                setScreen('idle');
+                return;
+            }
+
+            // Priority 3: Connection State
             if (!response.ok && currentScreen.value !== 'offline') {
                 setScreen('offline');
             } else if (response.ok && currentScreen.value === 'offline') {

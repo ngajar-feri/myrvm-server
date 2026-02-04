@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/machines/content', [App\Http\Controllers\Dashboard\MachineController::class, 'indexContent']);
         Route::get('/machines/{id}/playground', [App\Http\Controllers\Dashboard\MachineController::class, 'playground'])->name('machines.playground');
         Route::get('/machines/{id}/playground-content', [App\Http\Controllers\Dashboard\MachineController::class, 'playgroundContent'])->name('machines.playground-content');
+        Route::get('/machines/{id}/maintenance-window', [App\Http\Controllers\Dashboard\MachineController::class, 'maintenanceWindow'])->name('machines.maintenance-window');
 
         // Edge Devices Management
         Route::get('/devices', [App\Http\Controllers\Dashboard\DeviceController::class, 'index'])->name('devices');

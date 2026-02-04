@@ -139,6 +139,7 @@ class ConfigController extends Controller
             'success' => true,
             'data' => [
                 'machine_name' => $machine->name,
+                'status' => $machine->status, // Critical for Maintenance Mode
                 'theme_mode' => $themeMode,
                 'applied_theme' => $this->resolveTheme($themeMode, $machine->timezone),
                 'timezone' => $machine->timezone ?? 'Asia/Jakarta',

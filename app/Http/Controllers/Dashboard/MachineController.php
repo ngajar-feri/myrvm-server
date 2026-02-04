@@ -117,6 +117,29 @@ class MachineController extends Controller
         return view('dashboard.machines.playground', compact('machine'));
     }
 
+    public function show($id)
+    {
+        // Check if ID is likely a UUID (basic regex check or length)
+        if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i', $id)) {
+            $machine = RvmMachine::where('uuid', $id)->firstOrFail();
+        } else {
+            $machine = RvmMachine::findOrFail($id);
+        }
+
+        $machine->load(['edgeDevice', 'technicians']);
+
+        return view('dashboard.machines.show', compact('machine'));
+    }
+
+    /**
+     * Show Maintenance Monitor Window
+     */
+    public function maintenanceWindow($id)
+    {
+        $machine = RvmMachine::findOrFail($id);
+        return view('dashboard.machines.maintenance_window', compact('machine'));
+    }
+
     /**
      * Return playground content for AJAX modal loading.
      */
