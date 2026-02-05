@@ -5,31 +5,19 @@
       <div class="bio-bg-leaf"></div>
       <div class="bio-bg-circle"></div>
 
-      <div class="maintenance-columns">
-        <!-- Column 1: Identity & Status -->
-        <aside class="maintenance-col col-identity animate-slide-up delay-1">
-          <div class="tech-card glass-panel">
-            <div class="tech-avatar-wrapper">
-               <span class="tech-avatar">🛠️</span>
-               <div class="tech-pulse"></div>
-            </div>
-            <div class="tech-info">
-              <h2 class="animate-slide-down">Mode Maintenance</h2>
-              <p class="technician-name animate-fade-in delay-2">{{ technician?.technician_name || 'Teknisi' }}</p>
-            </div>
-            <div class="header-status animate-fade-in delay-2">
+      <div class="maintenance-rows">
+        <!-- Row 1: System Status (Top) -->
+        <header class="maintenance-row row-identity animate-slide-down delay-1">
+          <div class="status-card glass-panel">
+            <div class="header-status">
                 <span class="status-indicator"></span>
                 System Live
             </div>
           </div>
-          
-          <button class="exit-btn kiosk-btn kiosk-btn--outline" @click="$emit('exit')">
-            Keluar Maintenance
-          </button>
-        </aside>
+        </header>
 
-        <!-- Column 2: Information Message -->
-        <main class="maintenance-col col-info animate-slide-up delay-2">
+        <!-- Row 2: Information Message (Center) -->
+        <main class="maintenance-row row-info animate-slide-up delay-2">
           <div class="info-content glass-panel">
             <div class="warning-icon-wrapper">
               <span class="warning-icon animate-bounce">⚠️</span>
@@ -42,8 +30,8 @@
           </div>
         </main>
 
-        <!-- Column 3: Donation Bridge -->
-        <aside class="maintenance-col col-action animate-slide-up delay-3">
+        <!-- Row 3: Donation Bridge (Bottom) -->
+        <footer class="maintenance-row row-action animate-slide-up delay-3">
           <div class="action-card glass-panel">
             <div class="action-icon">🎁</div>
             <p class="action-text">
@@ -60,7 +48,7 @@
               Mulai Transaksi Donasi
             </button>
           </div>
-        </aside>
+        </footer>
       </div>
 
       <!-- Footer Info -->
@@ -86,7 +74,11 @@ const props = defineProps({
 defineEmits(['exit', 'start-donation']);
 
 const themeStore = useThemeStore();
-// kioskStore and other diagnostic refs removed as they are no longer needed for the informational view
+const config = window.KIOSK_CONFIG || {};
+
+const displayName = computed(() => {
+  return props.technician?.technician_name || config.assigned_technician || 'Teknisi Terdaftar';
+});
 </script>
 
 <style scoped>
@@ -103,7 +95,7 @@ const themeStore = useThemeStore();
 }
 
 .maintenance-screen {
-  padding: 60px 40px;
+  padding: 30px 40px;
   background-color: var(--bio-bg);
   min-height: 100vh;
   position: relative;
@@ -112,7 +104,8 @@ const themeStore = useThemeStore();
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 /* Biophilic Background */
@@ -147,79 +140,32 @@ const themeStore = useThemeStore();
     border-radius: 30px;
 }
 
-/* 3-Column Layout */
-.maintenance-columns {
+/* Vertical Row Layout */
+.maintenance-rows {
   display: flex;
-  justify-content: center;
-  align-items: stretch;
-  gap: 30px;
-  max-width: 1200px;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
+  max-width: 900px;
+  width: 100%;
   margin: 0 auto;
   position: relative;
   z-index: 1;
 }
 
-.maintenance-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.maintenance-row {
+  width: 100%;
 }
 
-/* Column 1: Identity Card */
-.tech-card {
-  padding: 40px 30px;
+/* Row 1: Status Card */
+.status-card {
+  padding: 15px 30px;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  text-align: center;
-  gap: 25px;
-  height: 100%;
-}
-
-.tech-avatar-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    background: white;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
-
-.tech-avatar { font-size: 50px; }
-
-/* Pulse Fix for Light Mode */
-.tech-pulse {
-    position: absolute;
-    top: -5px; right: -5px;
-    width: 20px; height: 20px;
-    background: var(--bio-green);
-    border-radius: 50%;
-    border: 3px solid white;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulse-green 2s infinite;
-}
-
-/* High Contrast Indicator for Light Mode */
-[data-theme="light"] .tech-pulse {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.9), 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.tech-info h2 {
-  font-size: 24px;
-  font-weight: 800;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-.technician-name {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 8px 0 0;
-  font-weight: 500;
+  width: auto;
+  margin: 0 auto;
 }
 
 .header-status {
@@ -227,7 +173,7 @@ const themeStore = useThemeStore();
     align-items: center;
     gap: 10px;
     background: rgba(16, 185, 129, 0.15);
-    color: #047857; /* Darker green for contrast */
+    color: #047857; 
     padding: 10px 20px;
     border-radius: 30px;
     font-weight: 700;
@@ -236,7 +182,8 @@ const themeStore = useThemeStore();
 
 [data-theme="light"] .header-status {
     background: #dcfce7;
-    border: 1px solid #bbf7d0;
+    border: 2px solid #86efac;
+    color: #065f46;
 }
 
 .status-indicator {
@@ -246,38 +193,45 @@ const themeStore = useThemeStore();
     animation: pulse-green 2s infinite;
 }
 
+[data-theme="light"] .status-indicator {
+    background: #047857;
+    box-shadow: 0 0 8px rgba(4, 120, 87, 0.4);
+}
+
 .exit-btn {
-  margin-top: auto;
-  opacity: 0.6;
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  opacity: 0.4;
   transition: opacity 0.3s;
 }
 .exit-btn:hover { opacity: 1; }
 
-/* Column 2: Maintenance Info */
+/* Row 2: Maintenance Info */
 .info-content {
-  padding: 50px 40px;
+  padding: 30px 40px;
   text-align: center;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   border: 2px solid rgba(245, 158, 11, 0.2);
 }
 
 .warning-icon-wrapper {
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 .warning-icon { 
-  font-size: 80px; 
+  font-size: 50px; 
   display: inline-block;
   filter: drop-shadow(0 10px 15px rgba(245, 158, 11, 0.3));
 }
 
 .info-title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #b45309;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .info-text {
@@ -293,11 +247,10 @@ const themeStore = useThemeStore();
   color: #b45309;
 }
 
-/* Column 3: Donation Mode */
+/* Row 3: Donation Mode */
 .action-card {
-  padding: 50px 40px;
+  padding: 30px 40px;
   text-align: center;
-  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -306,15 +259,15 @@ const themeStore = useThemeStore();
 }
 
 .action-icon {
-  font-size: 70px;
-  margin-bottom: 30px;
+  font-size: 50px;
+  margin-bottom: 15px;
   animation: float 3s ease-in-out infinite;
 }
 
 .action-text {
-  font-size: 20px;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: 10px;
   color: var(--text-primary);
 }
 
@@ -324,23 +277,37 @@ const themeStore = useThemeStore();
 }
 
 .action-instruction {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-secondary);
-  margin-bottom: 35px;
+  margin-bottom: 20px;
 }
 
 .donasi-btn {
   width: 100%;
+  max-width: 400px;
   font-size: 18px;
-  padding: 20px !important;
+  padding: 16px !important;
   box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3) !important;
 }
 
 /* Animations */
 @keyframes pulse-green {
-  0% { transform: scale(0.95); opacity: 0.8; }
-  50% { transform: scale(1.05); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.8; }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+  display: inline-block;
 }
 
 @keyframes float {

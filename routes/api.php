@@ -145,6 +145,10 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
         Route::post('/devices/{id}/command', [EdgeDeviceController::class, 'sendCommand']); // Manual command (Pull/Restart)
         Route::post('/devices/{id}/regenerate-key', [EdgeDeviceController::class, 'regenerateApiKey']); // New API key
         Route::get('/download-config/{deviceId}', [EdgeDeviceController::class, 'downloadConfig']); // Download config
+        
+        // Offline Sync Routes
+        Route::post('/sync-offline', [\App\Http\Controllers\Api\SyncOfflineController::class, 'syncOffline']);
+        Route::get('/system-donation-user', [\App\Http\Controllers\Api\SyncOfflineController::class, 'getSystemDonationUser']);
     });
     Route::post('/devices/{id}/telemetry', [EdgeDeviceController::class, 'telemetry']);
     Route::post('/devices/{id}/heartbeat', [EdgeDeviceController::class, 'heartbeat']);

@@ -72,7 +72,12 @@ class KioskController extends Controller
         $currentHour = (int) now()->setTimezone($machine->timezone ?? 'Asia/Jakarta')->format('H');
         $isNightTime = $currentHour >= 18 || $currentHour < 6;
 
+        // Fetch assigned technician for Maintenance UI
+        $machine->load(['technicians']);
+        $assignedTech = $machine->technicians->first();
+
         return [
+            'machine_id' => $machine->id,
             'machine_uuid' => $machine->uuid,
             'machine_name' => $machine->name,
             'location' => $machine->location ?? 'Unknown',
@@ -82,6 +87,7 @@ class KioskController extends Controller
             'qr_refresh_interval' => 300, // 5 minutes in seconds
             'websocket_channel' => "rvm.{$machine->serial_number}",
             'api_base_url' => config('app.url') . '/api/v1/kiosk',
+            'assigned_technician' => $assignedTech ? $assignedTech->name : null,
         ];
     }
 

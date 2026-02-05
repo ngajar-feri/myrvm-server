@@ -11,6 +11,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'rvm_machine_id',
+        'session_id',
         'total_points',
         'total_weight',
         'total_items',

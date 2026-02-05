@@ -85,7 +85,7 @@ class RvmMachine extends Model
     public function technicians(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'technician_assignments', 'rvm_machine_id', 'technician_id')
-            ->withPivot('status', 'assigned_at', 'description')
+            ->withPivot('status', 'description')
             ->withTimestamps();
     }
 

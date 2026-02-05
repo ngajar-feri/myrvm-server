@@ -264,7 +264,7 @@
                                     },
                                     "waste_type": {
                                         "type": "string",
-                                        "example": "plastic_bottle"
+                                        "example": "mineral"
                                     },
                                     "weight": {
                                         "type": "number",
