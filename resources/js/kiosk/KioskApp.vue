@@ -43,6 +43,7 @@
         v-else-if="kioskStore.currentScreen === 'maintenance'"
         :technician="kioskStore.technician"
         @exit="exitMaintenance"
+        @start-donation="startDonationFromMaintenance"
       />
       
       <!-- OFFLINE: Connection Lost -->
@@ -103,6 +104,11 @@ const enterMaintenance = (technicianData) => {
 const exitMaintenance = () => {
   kioskStore.technician = null;
   kioskStore.setScreen('idle');
+};
+
+const startDonationFromMaintenance = async () => {
+  kioskStore.technician = null;
+  await kioskStore.activateGuestMode();
 };
 
 // Lifecycle
