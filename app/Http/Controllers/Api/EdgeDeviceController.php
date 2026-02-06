@@ -731,14 +731,14 @@ class EdgeDeviceController extends Controller
      *          name="X-RVM-API-KEY",
      *          in="header",
      *          required=true,
-     *          description="API Key from rvm-credentials.json",
+     *          description="API Key from credentials.json",
      *          @OA\Schema(type="string", example="sk_live_abc123...")
      *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          @OA\JsonContent(
      *              required={"hardware_id", "name"},
-     *              @OA\Property(property="hardware_id", type="string", example="RVM-202601-006", description="From rvm-credentials.json"),
+     *              @OA\Property(property="hardware_id", type="string", example="RVM-202601-006", description="From credentials.json"),
      *              @OA\Property(property="name", type="string", example="RVM KU1", description="Machine display name"),
      *              @OA\Property(property="ip_local", type="string", example="192.168.1.105"),
      *              @OA\Property(property="ip_vpn", type="string", example="100.80.50.20"),
@@ -956,7 +956,7 @@ class EdgeDeviceController extends Controller
      *          name="X-RVM-API-KEY",
      *          in="header",
      *          required=true,
-     *          description="API Key from rvm-credentials.json",
+     *          description="API Key from credentials.json",
      *          @OA\Schema(type="string")
      *      ),
      *      @OA\RequestBody(
@@ -1025,7 +1025,7 @@ class EdgeDeviceController extends Controller
      *          name="X-RVM-API-KEY",
      *          in="header",
      *          required=true,
-     *          description="API Key from rvm-credentials.json",
+     *          description="API Key from credentials.json",
      *          @OA\Schema(type="string")
      *      ),
      *      @OA\RequestBody(
@@ -1284,6 +1284,7 @@ class EdgeDeviceController extends Controller
     {
         return [
             'is_maintenance_mode' => $machine->status === 'maintenance',
+            'system_donation_user_id' => -1, // Fixed ID for Guest/Offline donations
             'bin_full_threshold_percent' => $edgeDevice->threshold_full ?? 90,
             'camera_idle_timeout_sec' => 60,
             'motor_speed_delay' => 0.005,

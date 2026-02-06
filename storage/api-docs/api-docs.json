@@ -1050,7 +1050,7 @@
                         "name": "X-RVM-API-KEY",
                         "in": "header",
                         "required": true,
-                        "description": "API Key from rvm-credentials.json",
+                        "description": "API Key from credentials.json",
                         "schema": {
                             "type": "string",
                             "example": "sk_live_abc123..."
@@ -1071,7 +1071,7 @@
                                     "hardware_id": {
                                         "type": "string",
                                         "example": "RVM-202601-006",
-                                        "description": "Hardware ID from rvm-credentials.json"
+                                        "description": "Hardware ID from credentials.json"
                                     },
                                     "name": {
                                         "type": "string",
@@ -1263,7 +1263,7 @@
                         "name": "X-RVM-API-KEY",
                         "in": "header",
                         "required": true,
-                        "description": "API Key from rvm-credentials.json",
+                        "description": "API Key from credentials.json",
                         "schema": {
                             "type": "string"
                         }
@@ -1320,7 +1320,7 @@
                         "name": "X-RVM-API-KEY",
                         "in": "header",
                         "required": true,
-                        "description": "API Key from rvm-credentials.json",
+                        "description": "API Key from redentials.json",
                         "schema": {
                             "type": "string"
                         }
