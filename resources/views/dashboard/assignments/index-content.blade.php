@@ -379,6 +379,101 @@
     </div>
 </div>
 
+<!-- PIN Generation Confirmation Modal -->
+<div class="modal fade" id="pinConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+        <div class="modal-content"
+            style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="ti tabler-key text-primary me-2"></i>
+                    Konfirmasi PIN
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-2">
+                    <p class="mb-2">Generate PIN baru untuk assignment ini?</p>
+                    <div class="alert alert-info mb-0" style="border-radius: 10px; font-size: 13px;">
+                        <i class="ti tabler-clock me-1"></i>
+                        PIN akan berlaku selama 24 jam ke depan.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                    Batal
+                </button>
+                <button type="button" class="btn btn-primary" id="confirm-pin-btn">
+                    Generate PIN
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Remove Assignment Confirmation Modal -->
+<div class="modal fade" id="deleteAssignmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+        <div class="modal-content"
+            style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="ti tabler-alert-triangle text-danger me-2"></i>
+                    Hapus Akses
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-2">
+                    <p class="mb-0">Hapus assignment ini? User akan kehilangan akses ke RVM terkait.</p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                    Batal
+                </button>
+                <button type="button" class="btn btn-danger" id="confirm-remove-btn">
+                    Hapus Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Regenerate Key Confirmation Modal -->
+<div class="modal fade" id="regenerateKeyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
+        <div class="modal-content"
+            style="border-radius: 16px; border: none; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="ti tabler-alert-triangle text-warning me-2"></i>
+                    Konfirmasi Regenerasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center py-2">
+                    <p class="mb-2">Apakah Anda yakin ingin me-regenerate API Key untuk <strong id="regen-rvm-name"></strong>?</p>
+                    <div class="alert alert-danger mb-0" style="border-radius: 10px; font-size: 13px;">
+                        <i class="ti tabler-info-circle me-1"></i>
+                        <strong>PERINGATAN:</strong> Edge Device akan terputus (Unauthorized) hingga key baru dimasukkan di Setup Wizard (Handshake).
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                    <i class="ti tabler-x me-1"></i>Batal
+                </button>
+                <button type="button" class="btn btn-warning" id="confirm-regen-btn">
+                    <i class="ti tabler-refresh me-1"></i>Regenerate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Assignment Detail Modal - Bio-Digital 350px -->
 <div class="modal fade" id="assignmentDetailModal" tabindex="-1" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 350px;">
@@ -634,60 +729,130 @@
         },
 
         async generatePin(id) {
-            if (!confirm('Generate a new 6-digit PIN for this assignment? The PIN will expire in 24 hours.')) return;
+            const modalEl = document.getElementById('pinConfirmModal');
+            const confirmBtn = document.getElementById('confirm-pin-btn');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            
+            const handleConfirm = async () => {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
+                
+                try {
+                    const response = await apiHelper.post(`/api/v1/technician-assignments/${id}/generate-pin`);
+                    const data = await response.json();
 
-            try {
-                const response = await apiHelper.post(`/api/v1/technician-assignments/${id}/generate-pin`);
-                const data = await response.json();
-
-                document.getElementById('generated-pin-value').textContent = data.data.pin;
-                document.getElementById('generated-pin-expires').textContent = new Date(data.data.expires_at).toLocaleString();
-                const pinModalEl = document.getElementById('pinGeneratedModal');
-                bootstrap.Modal.getOrCreateInstance(pinModalEl).show();
-                // Fix: Force remove aria-hidden
-                pinModalEl.removeAttribute('aria-hidden');
-            } catch (e) {
-                alert('Failed to generate PIN');
-            }
+                    document.getElementById('generated-pin-value').textContent = data.data.pin;
+                    document.getElementById('generated-pin-expires').textContent = new Date(data.data.expires_at).toLocaleString();
+                    
+                    modal.hide();
+                    
+                    setTimeout(() => {
+                        const pinModalEl = document.getElementById('pinGeneratedModal');
+                        bootstrap.Modal.getOrCreateInstance(pinModalEl).show();
+                        pinModalEl.removeAttribute('aria-hidden');
+                    }, 500);
+                } catch (e) {
+                    alert('Failed to generate PIN');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = 'Generate PIN';
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                }
+            };
+            
+            // Re-bind listener
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            newConfirmBtn.addEventListener('click', handleConfirm);
+            
+            modal.show();
+            modalEl.removeAttribute('aria-hidden');
         },
 
         async removeAssignment(id) {
-            if (!confirm('Remove this assignment? User will lose access to this RVM.')) return;
-
-            try {
-                await apiHelper.delete(`/api/v1/technician-assignments/${id}`);
-                this.loadAssignments();
-            } catch (e) {
-                alert('Failed to remove assignment');
-            }
+            const modalEl = document.getElementById('deleteAssignmentModal');
+            const confirmBtn = document.getElementById('confirm-remove-btn');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            
+            const handleConfirm = async () => {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Removing...';
+                
+                try {
+                    await apiHelper.delete(`/api/v1/technician-assignments/${id}`);
+                    modal.hide();
+                    this.loadAssignments();
+                } catch (e) {
+                    alert('Failed to remove assignment');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = 'Hapus Assignment';
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                }
+            };
+            
+            // Re-bind listener
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            newConfirmBtn.addEventListener('click', handleConfirm);
+            
+            modal.show();
+            modalEl.removeAttribute('aria-hidden');
         },
 
         async regenerateApiKey(rvmId, rvmName) {
-            if (!confirm(`WARNING: Regenerating the API Key for "${rvmName}" will disconnect the Edge Device until the new key is configured. Continue?`)) return;
+            // Set RVM name in modal
+            document.getElementById('regen-rvm-name').textContent = rvmName;
+            
+            // Get modal and button
+            const modalEl = document.getElementById('regenerateKeyModal');
+            const confirmBtn = document.getElementById('confirm-regen-btn');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            
+            // Simple one-time click handler logic
+            const handleConfirm = async () => {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
+                
+                try {
+                    const response = await apiHelper.post(`/api/v1/rvm-machines/${rvmId}/regenerate-api-key`);
+                    const data = await response.json();
 
-            try {
-                const response = await apiHelper.post(`/api/v1/rvm-machines/${rvmId}/regenerate-api-key`);
-                const data = await response.json();
+                    // Show the new key in the credentials modal
+                    const credResponse = await apiHelper.get(`/api/v1/rvm-machines/${rvmId}/credentials`);
+                    const credData = await credResponse.json();
 
-                // Show the new key in the credentials modal
-                const credResponse = await apiHelper.get(`/api/v1/rvm-machines/${rvmId}/credentials`);
-                const credData = await credResponse.json();
+                    window.assignmentCredentials.setCredentials(
+                        credData.serial_number,
+                        credData.api_key,
+                        credData.name,
+                        rvmId
+                    );
 
-                window.assignmentCredentials.setCredentials(
-                    credData.serial_number,
-                    credData.api_key,
-                    credData.name,
-                    rvmId
-                );
+                    modal.hide();
+                    
+                    setTimeout(() => {
+                        const successModalEl = document.getElementById('assignmentSuccessModal');
+                        bootstrap.Modal.getOrCreateInstance(successModalEl).show();
+                        successModalEl.removeAttribute('aria-hidden');
+                    }, 500);
 
-                const successModalEl = document.getElementById('assignmentSuccessModal');
-                bootstrap.Modal.getOrCreateInstance(successModalEl).show();
-                // Fix: Force remove aria-hidden
-                successModalEl.removeAttribute('aria-hidden');
-
-            } catch (e) {
-                alert('Failed to regenerate API Key');
-            }
+                } catch (e) {
+                    alert('Failed to regenerate API Key');
+                } finally {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="ti tabler-refresh me-1"></i>Regenerate';
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                }
+            };
+            
+            // Clean up old listeners (simple way)
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            newConfirmBtn.addEventListener('click', handleConfirm);
+            
+            modal.show();
+            modalEl.removeAttribute('aria-hidden');
         },
 
         setupEventListeners() {
