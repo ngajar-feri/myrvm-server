@@ -1,7 +1,7 @@
 <template>
   <div class="idle-screen kiosk-content">
     <!-- Logo & Welcome -->
-    <div class="kiosk-header">
+    <div class="kiosk-header" @dblclick="$emit('debug-login')">
       <div class="kiosk-logo" aria-label="MyRVM Logo">🌿</div>
       <h1 class="welcome-title">Selamat Datang</h1>
       <p class="welcome-subtitle">Scan QR Code untuk memulai daur ulang</p>
@@ -54,7 +54,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useKioskStore } from '../stores/kioskStore';
 import QRCode from 'qrcode.vue';
 
-const emit = defineEmits(['guest-mode', 'maintenance']);
+const emit = defineEmits(['guest-mode', 'maintenance', 'debug-login']);
 
 const kioskStore = useKioskStore();
 

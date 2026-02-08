@@ -120,6 +120,41 @@ export const useKioskStore = defineStore('kiosk', () => {
     }
 
     /**
+     * DEBUG: Bypass Login for Testing (John Doe)
+     */
+    function bypassLogin() {
+        console.log('[DEBUG] Bypassing Login...');
+        sessionUser.value = {
+            id: 4,
+            name: 'John Doe',
+            email: 'john@example.com',
+            balance: 5000,
+            isGuest: false
+        };
+        sessionBalance.value = 5000;
+        setScreen('active');
+    }
+
+    /**
+     * Camera Optimization Actions
+     */
+    async function startCamera() {
+        try {
+            await fetch('http://localhost:8003/camera/start', { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to start camera:', e);
+        }
+    }
+
+    async function stopCamera() {
+        try {
+            await fetch('http://localhost:8003/camera/stop', { method: 'POST' });
+        } catch (e) {
+            console.error('Failed to stop camera:', e);
+        }
+    }
+
+    /**
      * Handle session authorization (from QR scan)
      */
     function handleSessionAuthorized(payload) {
@@ -256,6 +291,9 @@ export const useKioskStore = defineStore('kiosk', () => {
         setScreen,
         fetchSessionToken,
         activateGuestMode,
+        bypassLogin,
+        startCamera,
+        stopCamera,
         handleSessionAuthorized,
         handleItemProcessed,
         continueSession,

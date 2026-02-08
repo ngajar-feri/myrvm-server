@@ -7,6 +7,7 @@
         v-if="kioskStore.currentScreen === 'idle'"
         @guest-mode="activateGuestMode"
         @maintenance="showMaintenanceLogin"
+        @debug-login="handleDebugLogin"
       />
       
       <!-- ACTIVE: User Session -->
@@ -90,6 +91,10 @@ const connectionStatus = computed(() => ({
 // Actions
 const activateGuestMode = async () => {
   await kioskStore.activateGuestMode();
+};
+
+const handleDebugLogin = () => {
+  kioskStore.bypassLogin();
 };
 
 const showMaintenanceLogin = () => {

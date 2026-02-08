@@ -33,7 +33,7 @@
             class="kiosk-btn kiosk-btn--primary kiosk-btn--large ripple"
             @click="$emit('continue')"
           >
-            {{ accepted ? 'Lanjutkan' : 'Coba Lagi' }}
+            {{ accepted ? 'Lanjutkan' : 'Coba Lagi' }} ({{ timer }}s)
           </button>
           <button 
             class="kiosk-btn kiosk-btn--secondary"
@@ -65,12 +65,30 @@ const props = defineProps({
   },
 });
 
-defineEmits(['continue', 'end']);
-
 const resultClass = computed(() => ({
   'result-card--accepted': props.accepted,
   'result-card--rejected': !props.accepted,
 }));
+
+// Auto-continue timer
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const emit = defineEmits(['continue', 'end']);
+const timer = ref(5);
+let interval = null;
+
+onMounted(() => {
+  interval = setInterval(() => {
+    timer.value--;
+    if (timer.value <= 0) {
+      emit('continue');
+    }
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(interval);
+});
 </script>
 
 <style scoped>

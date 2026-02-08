@@ -52,6 +52,18 @@
       >
         Selesai
       </button>
+
+      <!-- Simulation Button (Debug) -->
+      <div style="margin-top: 24px;">
+        <button 
+          class="kiosk-btn kiosk-btn--primary kiosk-btn--large"
+          style="background-color: #2c3e50;" 
+          @click="triggerInference"
+          :disabled="isProcessing"
+        >
+          {{ isProcessing ? 'Memproses...' : 'Simulasi Deteksi Botol' }}
+        </button>
+      </div>
     </div>
     
     <!-- End Session Confirmation Modal -->
@@ -121,6 +133,54 @@ const confirmEndSession = () => {
 const endSession = () => {
   showConfirmModal.value = false;
   kioskStore.endSession();
+};
+
+onMounted(() => {
+  kioskStore.startCamera();
+});
+
+onUnmounted(() => {
+  kioskStore.stopCamera();
+});
+
+// Simulation Logic
+const isProcessing = ref(false);
+
+const triggerInference = async () => {
+  if (isProcessing.value) return;
+  isProcessing.value = true;
+  
+  try {
+    // API Call to Edge Service (Port 8003)
+    const response = await fetch('http://localhost:8003/trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (!response.ok) throw new Error('API Error');
+    
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+        const result = data.data;
+        // Map to Store Payload
+        kioskStore.handleItemProcessed({
+            accepted: result.status === 'ACCEPTED',
+            item_type: result.class || 'unknown',
+            points_awarded: result.status === 'ACCEPTED' ? 50 : 0,
+            rejection_reason: result.reason
+        });
+    } else {
+        console.error('Inference Failed:', data);
+        alert('Deteksi Gagal: ' + (data.error || 'Unknown'));
+    }
+    
+  } catch (error) {
+    console.error('Trigger Error:', error);
+    alert('Gagal trigger kamera: ' + error.message);
+  } finally {
+    isProcessing.value = false;
+  }
 };
 </script>
 
