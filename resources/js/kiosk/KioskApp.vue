@@ -57,6 +57,7 @@
     <footer class="kiosk-footer">
       <span>{{ config.machine_name }}</span>
       <span class="status-dot" :class="connectionStatus"></span>
+      <small style="opacity: 0.5; font-size: 10px;">{{ kioskStore.currentScreen }}</small>
     </footer>
   </div>
 </template>

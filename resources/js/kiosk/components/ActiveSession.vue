@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useKioskStore } from '../stores/kioskStore';
 
 const props = defineProps({
@@ -135,13 +135,6 @@ const endSession = () => {
   kioskStore.endSession();
 };
 
-onMounted(() => {
-  kioskStore.startCamera();
-});
-
-onUnmounted(() => {
-  kioskStore.stopCamera();
-});
 
 // Simulation Logic
 const isProcessing = ref(false);
@@ -152,6 +145,7 @@ const triggerInference = async () => {
   
   try {
     // API Call to Edge Service (Port 8003)
+    // The backend will auto-start the camera if needed
     const response = await fetch('http://localhost:8003/trigger', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
@@ -179,6 +173,10 @@ const triggerInference = async () => {
     console.error('Trigger Error:', error);
     alert('Gagal trigger kamera: ' + error.message);
   } finally {
+    // Ensure camera is turned off after simulation
+    try {
+        await kioskStore.stopCamera(); 
+    } catch (e) { console.error('Error stopping camera:', e); }
     isProcessing.value = false;
   }
 };
